@@ -86,11 +86,7 @@ Plug 'tpope/vim-fugitive'
 " Plug 'nvim-lualine/lualine.nvim'
 Plug 'nvim-lua/plenary.nvim'
 Plug 'nvim-telescope/telescope.nvim', { 'branch': '0.1.x' }
-if has("win32")
-	Plug 'nvim-telescope/telescope-fzf-native.nvim', { 'do': 'cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release && cmake --install build --prefix build' }
-else
-	Plug 'nvim-telescope/telescope-fzf-native.nvim', { 'do': 'make' }
-endif
+Plug 'nvim-telescope/telescope-fzf-native.nvim', { 'do': 'cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release && cmake --install build --prefix build' }
 
 " parsing the code
 Plug 'nvim-treesitter/nvim-treesitter', { 'do': ':TSUpdate' }
@@ -176,7 +172,8 @@ require('Comment').setup()
 require('telescope').setup { }
 require('telescope').load_extension('fzf')
 
-require('nvim-treesitter.configs').setup {
+-- require('nvim-treesitter.configs').setup {
+require('nvim-treesitter.config').setup {
     ensure_installed = { "c", "cpp", "python", "make", "cmake", "bash", "sql", "vim", "lua", "markdown" },
     highlight = {
         enable = true
