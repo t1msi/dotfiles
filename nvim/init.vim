@@ -229,6 +229,60 @@ for _, lsp in ipairs(servers) do
   }
 end
 
+lspconfig.pylsp.setup {
+on_attach = custom_attach,
+settings = {
+    pylsp = {
+    plugins = {
+        -- formatter options
+        black = { enabled = true },
+        autopep8 = { enabled = false },
+        yapf = { enabled = false },
+        -- linter options
+        pylint = { enabled = true, executable = "pylint" },
+        pyflakes = { enabled = false },
+        pycodestyle = { enabled = false },
+        -- type checker
+        pylsp_mypy = { enabled = true },
+        -- auto-completion options
+        jedi_completion = { fuzzy = true },
+        -- import sorting
+        pyls_isort = { enabled = true },
+    },
+    },
+},
+flags = {
+    debounce_text_changes = 200,
+},
+capabilities = capabilities,
+}
+
+local configs = require("lspconfig.configs")
+local nvim_lsp = require("lspconfig")
+if not configs.neocmake then
+    configs.neocmake = {
+        default_config = {
+            cmd = { "neocmakelsp", "--stdio" },
+            filetypes = { "cmake" },
+            root_dir = function(fname)
+                return nvim_lsp.util.find_git_ancestor(fname)
+            end,
+            single_file_support = true,-- suggested
+            on_attach = on_attach, -- on_attach is the on_attach function you defined
+            init_options = {
+                format = {
+                    enable = true
+                },
+                lint = {
+                    enable = true
+                },
+                scan_cmake_in_package = true -- default is true
+            }
+        }
+    }
+    nvim_lsp.neocmake.setup({})
+end
+
 -- luasnip setup
 local luasnip = require 'luasnip'
 
