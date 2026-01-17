@@ -192,10 +192,16 @@ require('nvim-treesitter.configs').setup {
     },
 }
 
+vim.deprecate = (function(overriden)
+  return function(_, _, _, xx)
+    if xx == 'nvim-lspconfig' then return end
+    return overriden(_, _, _, xx)
+  end
+end)(vim.deprecate)
+
 local opts = { noremap=true, silent=true }
 -- vim.keymap.set("n", "<C-+", "<ZoomIn>")
 -- vim.keymap.set("n", "<C--", "<ZoomOut>")
-
 
 vim.keymap.set('n', '<space>e', vim.diagnostic.open_float, opts)
 vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, opts)
