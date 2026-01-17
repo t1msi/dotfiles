@@ -37,6 +37,9 @@ set splitright
 nnoremap <CR> :nohl<CR><CR>
 
 " buffers & tabs
+nnoremap <C-t> :tabnew<cr>
+nnoremap <C-w> :bd!<cr>
+"nnoremap <M-w> :tabclose<cr>
 nnoremap <C-Tab> :tabnext<cr>
 nnoremap <C-S-Tab> :tabprev<cr>
 
@@ -69,6 +72,9 @@ call plug#begin()
 Plug 'tomasr/molokai'
 Plug 'jnurmine/Zenburn'
 
+" File explorer
+Plug 'preservim/nerdtree'
+
 " Async make building
 Plug 'tpope/vim-dispatch'
 "Plug 'neomake/neomake'
@@ -100,6 +106,9 @@ Plug 'p00f/clangd_extensions.nvim'
 " move blocks of code + one-line formatting
 Plug 'matze/vim-move'
 
+" surroounding
+Plug 'echasnovski/mini.surround'
+
 " TODO():
 " - insert mode: WINDOWS-style copy-pasting
 " - disable auto-completion (use with direct call)
@@ -113,10 +122,30 @@ hi VertSplit guifg=#5b605e guibg=#3f3f3f ctermfg=240 ctermbg=237
 
 let mapleader=","
 
+function! CloseAllBuffersButCurrent()
+  let curr = bufnr("%")
+  let last = bufnr("$")
+
+  if curr > 1    | silent! execute "1,".(curr-1)."bd"     | endif
+  if curr < last | silent! execute (curr+1).",".last."bd" | endif
+endfunction
+
 nnoremap <leader>ff <cmd>Telescope find_files<cr>
 nnoremap <leader>fg <cmd>Telescope live_grep<cr>
 nnoremap <leader>fb <cmd>Telescope buffers<cr>
+noremap  <leader>bd :call CloseAllBuffersButCurrent()<cr>
 nnoremap <leader>fh <cmd>Telescope help_tags<cr>
+
+nnoremap <M-e> :NERDTreeToggle<CR>
+nnoremap <C-`> :terminal<CR>
+tnoremap <Esc> <C-\><C-n>
+
+"fast find/replace word under cursor
+nnoremap <Leader>s :%s/\<<C-r><C-w>\>//g<Left><Left>
+"fast search under cursor
+vnoremap // y/\V<C-R>=escape(@",'/\')<CR><CR>
+"insert a single character
+nnoremap \ :exec "normal i".nr2char(getchar())."\e"<CR>
 
 " keybinding collision with Fabien's window movement <A-hjkl>
 let g:move_key_modifier = 'S' 
@@ -124,14 +153,25 @@ let g:move_key_modifier = 'S'
 " Lualine init
 lua << LUAEND
 
+require('mini.surround').setup()
+
 require('telescope').setup { }
 require('telescope').load_extension('fzf')
 
 require('nvim-treesitter.configs').setup {
-	ensure_installed = { "c", "cpp", "make", "cmake", "bash", "sql", "vim", "lua", "markdown" },
-	highlight = {
-		enable = true
-	},
+    ensure_installed = { "c", "cpp", "python", "make", "cmake", "bash", "sql", "vim", "lua", "markdown" },
+    highlight = {
+        enable = true
+        },
+    incremental_selection = {
+        enable = true,
+        keymaps = {
+            init_selection = '<C-n>',
+            node_incremental = '<C-n>',
+            scope_incremental = '<S-n>',
+            node_decremental = '<M-n>',
+        },
+    },
 }
 
 local opts = { noremap=true, silent=true }
