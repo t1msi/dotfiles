@@ -109,6 +109,9 @@ Plug 'matze/vim-move'
 " surroounding
 Plug 'echasnovski/mini.surround'
 
+"Commeting
+Plug 'numToStr/Comment.nvim'
+
 " TODO():
 " - insert mode: WINDOWS-style copy-pasting
 " - disable auto-completion (use with direct call)
@@ -154,6 +157,7 @@ let g:move_key_modifier = 'S'
 lua << LUAEND
 
 require('mini.surround').setup()
+require('Comment').setup()
 
 require('telescope').setup { }
 require('telescope').load_extension('fzf')
@@ -168,7 +172,7 @@ require('nvim-treesitter.configs').setup {
         keymaps = {
             init_selection = '<C-n>',
             node_incremental = '<C-n>',
-            scope_incremental = '<S-n>',
+            scope_incremental = '<C-n><cr>',
             node_decremental = '<M-n>',
         },
     },
