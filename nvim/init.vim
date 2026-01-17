@@ -153,6 +153,20 @@ nnoremap \ :exec "normal i".nr2char(getchar())."\e"<CR>
 " keybinding collision with Fabien's window movement <A-hjkl>
 let g:move_key_modifier = 'S' 
 
+" Increases the font size with `amount`
+function! Zoom(amount) abort
+    call ZoomSet(matchstr(&guifont, '\d\+$') + a:amount)
+endfunc
+
+  " Sets the font size to `font_size`
+function ZoomSet(font_size) abort
+  let &guifont = substitute(&guifont, '\d\+$', a:font_size, '')
+endfunc
+
+noremap <silent> <C-+> :call Zoom(v:count1)<CR>
+noremap <silent> <C--> :call Zoom(-v:count1)<CR>
+noremap <silent> <C-0> :call ZoomSet(11)<CR>
+
 " Lualine init
 lua << LUAEND
 
@@ -179,6 +193,10 @@ require('nvim-treesitter.configs').setup {
 }
 
 local opts = { noremap=true, silent=true }
+-- vim.keymap.set("n", "<C-+", "<ZoomIn>")
+-- vim.keymap.set("n", "<C--", "<ZoomOut>")
+
+
 vim.keymap.set('n', '<space>e', vim.diagnostic.open_float, opts)
 vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, opts)
 vim.keymap.set('n', ']d', vim.diagnostic.goto_next, opts)

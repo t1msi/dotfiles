@@ -1,0 +1,3 @@
+set hidden true
+cmd trash $IFS="$(printf '\n\t')"; mv $fx /home/$USER/.local/share/Trash/files/
+map D trash
