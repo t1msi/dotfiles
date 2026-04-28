@@ -85,7 +85,7 @@ Plug 'tpope/vim-fugitive'
 " Lua status bar + functions + finding the code
 " Plug 'nvim-lualine/lualine.nvim'
 Plug 'nvim-lua/plenary.nvim'
-Plug 'nvim-telescope/telescope.nvim', { 'branch': '0.1.x' }
+Plug 'nvim-telescope/telescope.nvim', { 'tag': 'v0.2.2' }
 Plug 'nvim-telescope/telescope-fzf-native.nvim', { 'do': 'cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release && cmake --install build --prefix build' }
 
 " parsing the code
@@ -169,14 +169,20 @@ lua << LUAEND
 require('mini.surround').setup()
 require('Comment').setup()
 
-require('telescope').setup { }
+require('telescope').setup {
+    pickers = {
+        find_files = {
+          theme = "dropdown",
+        }
+    }
+}
 require('telescope').load_extension('fzf')
 
-require('nvim-treesitter.configs').setup {
+require('nvim-treesitter').setup {
     ensure_installed = { "c", "cpp", "python", "make", "cmake", "bash", "sql", "vim", "lua", "markdown" },
-    highlight = {
-        enable = true
-        },
+    auto_install = true,
+    indent = { enable = true },
+    highlight = { enable = true },
     incremental_selection = {
         enable = true,
         keymaps = {
