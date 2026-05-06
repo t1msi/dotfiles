@@ -85,7 +85,7 @@ Plug 'tpope/vim-fugitive'
 " Lua status bar + functions + finding the code
 " Plug 'nvim-lualine/lualine.nvim'
 Plug 'nvim-lua/plenary.nvim'
-Plug 'nvim-telescope/telescope.nvim', { 'branch': '0.1.x' }
+Plug 'nvim-telescope/telescope.nvim', { 'tag': 'v0.2.2' }
 Plug 'nvim-telescope/telescope-fzf-native.nvim', { 'do': 'cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release && cmake --install build --prefix build' }
 
 " parsing the code
@@ -172,15 +172,20 @@ lua << LUAEND
 require('mini.surround').setup()
 require('Comment').setup()
 
-require('telescope').setup { }
+require('telescope').setup {
+    pickers = {
+        find_files = {
+          theme = "dropdown",
+        }
+    }
+}
 require('telescope').load_extension('fzf')
 
--- require('nvim-treesitter.configs').setup {
-require('nvim-treesitter.config').setup {
+require('nvim-treesitter').setup {
     ensure_installed = { "c", "cpp", "python", "make", "cmake", "bash", "sql", "vim", "lua", "markdown" },
-    highlight = {
-        enable = true
-        },
+    auto_install = true,
+    indent = { enable = true },
+    highlight = { enable = true },
     incremental_selection = {
         enable = true,
         keymaps = {
@@ -303,6 +308,7 @@ local opts = { noremap=true, silent=true }
 -- vim.keymap.set("n", "<C-+", "<ZoomIn>")
 -- vim.keymap.set("n", "<C--", "<ZoomOut>")
 
+
 vim.keymap.set('n', '<space>e', vim.diagnostic.open_float, opts)
 vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, opts)
 vim.keymap.set('n', ']d', vim.diagnostic.goto_next, opts)
@@ -342,49 +348,43 @@ vim.api.nvim_create_autocmd('LspAttach', {
 -- Add additional capabilities supported by nvim-cmp
 local capabilities = require('cmp_nvim_lsp').default_capabilities()
 
-local lspconfig = require('lspconfig')
-
--- Enable some language servers with the additional completion capabilities offered by nvim-cmp
-local servers = { 'clangd' }
-for _, lsp in ipairs(servers) do
-  lspconfig[lsp].setup {
+vim.lsp.config("clangd", {
     -- on_attach = my_custom_on_attach,
     capabilities = capabilities,
-  }
-end
+})
+vim.lsp.enable({"clangd"})
 
-lspconfig.pylsp.setup {
-on_attach = custom_attach,
-settings = {
-    pylsp = {
-    plugins = {
-        -- formatter options
-        black = { enabled = true },
-        autopep8 = { enabled = false },
-        yapf = { enabled = false },
-        -- linter options
-        pylint = { enabled = true, executable = "pylint" },
-        pyflakes = { enabled = false },
-        pycodestyle = { enabled = false },
-        -- type checker
-        pylsp_mypy = { enabled = true },
-        -- auto-completion options
-        jedi_completion = { fuzzy = true },
-        -- import sorting
-        pyls_isort = { enabled = true },
+vim.lsp.config("pylsp", {
+    on_attach = custom_attach,
+    settings = {
+        pylsp = {
+            plugins = {
+                -- formatter options
+                black = { enabled = true },
+                autopep8 = { enabled = false },
+                yapf = { enabled = false },
+                -- linter options
+                pylint = { enabled = true, executable = "pylint" },
+                pyflakes = { enabled = false },
+                pycodestyle = { enabled = false },
+                -- type checker
+                pylsp_mypy = { enabled = true },
+                -- auto-completion options
+                jedi_completion = { fuzzy = true },
+                -- import sorting
+                pyls_isort = { enabled = true },
+            },
+        },
     },
+    flags = {
+        debounce_text_changes = 200,
     },
-},
-flags = {
-    debounce_text_changes = 200,
-},
-capabilities = capabilities,
-}
+    capabilities = capabilities,
+})
+vim.lsp.enable({"pylsp"})
 
-local configs = require("lspconfig.configs")
-local nvim_lsp = require("lspconfig")
-if not configs.neocmake then
-    configs.neocmake = {
+vim.lsp.config("neocmake", {
+      flags = { debounce_text_changes = 300 },
         default_config = {
             cmd = { "neocmakelsp", "--stdio" },
             filetypes = { "cmake" },
@@ -403,9 +403,73 @@ if not configs.neocmake then
                 scan_cmake_in_package = true -- default is true
             }
         }
-    }
-    nvim_lsp.neocmake.setup({})
-end
+})
+vim.lsp.enable({"neocmake"})
+
+-- local lspconfig = require('lspconfig')
+
+-- Enable some language servers with the additional completion capabilities offered by nvim-cmp
+-- local servers = { 'clangd' }
+-- for _, lsp in ipairs(servers) do
+--   lspconfig[lsp].setup {
+--     -- on_attach = my_custom_on_attach,
+--     capabilities = capabilities,
+--   }
+-- end
+
+-- lspconfig.pylsp.setup {
+-- on_attach = custom_attach,
+-- settings = {
+--     pylsp = {
+--     plugins = {
+--         -- formatter options
+--         black = { enabled = true },
+--         autopep8 = { enabled = false },
+--         yapf = { enabled = false },
+--         -- linter options
+--         pylint = { enabled = true, executable = "pylint" },
+--         pyflakes = { enabled = false },
+--         pycodestyle = { enabled = false },
+--         -- type checker
+--         pylsp_mypy = { enabled = true },
+--         -- auto-completion options
+--         jedi_completion = { fuzzy = true },
+--         -- import sorting
+--         pyls_isort = { enabled = true },
+--     },
+--     },
+-- },
+-- flags = {
+--     debounce_text_changes = 200,
+-- },
+-- capabilities = capabilities,
+-- }
+
+-- local configs = require("lspconfig.configs")
+-- local nvim_lsp = require("lspconfig")
+-- if not configs.neocmake then
+--     configs.neocmake = {
+--         default_config = {
+--             cmd = { "neocmakelsp", "--stdio" },
+--             filetypes = { "cmake" },
+--             root_dir = function(fname)
+--                 return nvim_lsp.util.find_git_ancestor(fname)
+--             end,
+--             single_file_support = true,-- suggested
+--             on_attach = on_attach, -- on_attach is the on_attach function you defined
+--             init_options = {
+--                 format = {
+--                     enable = true
+--                 },
+--                 lint = {
+--                     enable = true
+--                 },
+--                 scan_cmake_in_package = true -- default is true
+--             }
+--         }
+--     }
+--     nvim_lsp.neocmake.setup({})
+-- end
 
 -- luasnip setup
 local luasnip = require 'luasnip'
