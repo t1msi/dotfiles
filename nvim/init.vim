@@ -214,80 +214,87 @@ require('packer').startup(function(use)
   use 'wbthomason/packer.nvim'
   -- My plugins here
 
-  use {
-    'inhesrom/remote-ssh.nvim',
-    tag = 'v0.5.1-alpha',
-    -- branch = "v0.5.1-alpha",
-    requires = {
-        "inhesrom/telescope-remote-buffer",
-        "nvim-telescope/telescope.nvim",
-        "nvim-lua/plenary.nvim",
-        'neovim/nvim-lspconfig',
-    },
-    config = function()
-        require('telescope-remote-buffer').setup()
+use {
+  'inhesrom/remote-ssh.nvim',
+  tag = 'v0.7.0-alpha',
+  requires = {
+      "inhesrom/telescope-remote-buffer",
+      "nvim-telescope/telescope.nvim",
+      "nvim-lua/plenary.nvim",
+      'neovim/nvim-lspconfig',
+      'rcarriga/nvim-notify',
+  },
+  config = function()
+    require('telescope-remote-buffer').setup({
+      fzf = "<leader>fz",
+      match = "<leader>gb",
+      oldfiles = "<leader>rb"
+    })
  
-        -- setup lsp_config here or import from part of neovim config that sets up LSP
- 
-        -- require('remote-ssh').setup({
-        --     on_attach = lsp_config.on_attach,
-        --     capabilities = lsp_config.capabilities,
-        --     filetype_to_server = lsp_config.filetype_to_server
-        -- })
- 
-        require('remote-ssh').setup({
-            -- Optional: Custom on_attach function for LSP clients
-            on_attach = function(client, bufnr)
-                -- Your LSP keybindings and setup
-            end,
-        
-            -- Optional: Custom capabilities for LSP clients
-            capabilities = vim.lsp.protocol.make_client_capabilities(),
-        
-            -- Custom mapping from filetype to LSP server name
-            filetype_to_server = {
-                -- Example: Use pylsp for Python (default and recommended)
-                python = "pylsp",
-                -- More customizations...
-            },
-        
-            -- Custom server configurations
-            server_configs = {
-                -- Custom config for clangd
-                clangd = {
-                    filetypes = { "c", "cpp", "objc", "objcpp" },
-                    root_patterns = { ".git", "compile_commands.json" },
-                    init_options = {
-                        usePlaceholders = true,
-                        completeUnimported = true
-                    }
-                },
-                -- More server configs...
-            },
-        
-            -- Async write configuration
-            async_write_opts = {
-                timeout = 30,         -- Timeout in seconds for write operations
-                debug = false,        -- Enable debug logging
-                log_level = vim.log.levels.INFO,
-                autosave = true,      -- Enable automatic saving on text changes (default: true)
-                                      -- Set to false to disable auto-save while keeping manual saves (:w) working
-                save_debounce_ms = 3000, -- Delay before initiating auto-save to handle rapid editing (default: 3000)
-        
-                -- Logging configuration
-                logging = {
-                    max_entries = 1000,      -- Maximum number of log entries to store in memory
-                    include_context = true,  -- Include contextual data (URLs, exit codes, etc.) in logs
-                    viewer = {
-                        height = 15,         -- Height of log viewer split in lines
-                        auto_scroll = true,  -- Auto-scroll to bottom when new logs arrive
-                        position = "bottom"  -- Position of split (bottom/top)
-                    }
-                }
-            }
-        })
-    end
-  }
+    require('remote-ssh').setup({
+      on_attach = function(client, bufnr)
+        -- Your LSP keybindings and setup
+      end,
+      capabilities = vim.lsp.protocol.make_client_capabilities(),
+      filetype_to_server = {
+        python = "pylsp",
+      },
+      server_configs = {
+        clangd = {
+          filetypes = { "c", "cpp", "cc", "objc", "objcpp" },
+          root_patterns = { ".git", "compile_commands.json" },
+          init_options = {
+            usePlaceholders = true,
+            completeUnimported = true
+          }
+        },
+        neocmake = {
+          cmd = { "neocmakelsp", "--stdio" },
+          filetypes = { "cmake" },
+          root_dir = function(fname)
+            return vim.lsp.util.find_git_ancestor(fname)
+          end,
+          single_file_support = true,
+          on_attach = function(client, bufnr) end,
+          init_options = {
+            format = { enable = true },
+            lint = { enable = true },
+            scan_cmake_in_package = true
+          }
+        },
+        pylsp = {
+          plugins = {
+            black = { enabled = true },
+            autopep8 = { enabled = false },
+            yapf = { enabled = false },
+            pylint = { enabled = true, executable = "pylint" },
+            pyflakes = { enabled = false },
+            pycodestyle = { enabled = false },
+            pylsp_mypy = { enabled = true },
+            jedi_completion = { fuzzy = true },
+            pyls_isort = { enabled = true },
+          },
+        }
+      },
+      async_write_opts = {
+        timeout = 30,
+        debug = false,
+        log_level = vim.log.levels.INFO,
+        autosave = true,
+        save_debounce_ms = 3000,
+        logging = {
+          max_entries = 1000,
+          include_context = true,
+          viewer = {
+            height = 15,
+            auto_scroll = true,
+            position = "bottom"
+          }
+        }
+      }
+    })
+  end
+}
 
   -- Automatically set up your configuration after cloning packer.nvim
   -- Put this at the end after all plugins
