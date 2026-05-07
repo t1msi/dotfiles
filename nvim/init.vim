@@ -232,13 +232,34 @@ use {
     })
  
     require('remote-ssh').setup({
+      -- Define on_attach function directly here
       on_attach = function(client, bufnr)
-        -- Your LSP keybindings and setup
+        -- Your LSP keybindings for remote buffers
+        local opts = { buffer = bufnr }
+        vim.keymap.set('n', 'gd', vim.lsp.buf.definition, opts)
+        vim.keymap.set('n', 'K', vim.lsp.buf.hover, opts)
+        vim.keymap.set('n', 'gi', vim.lsp.buf.implementation, opts)
+        vim.keymap.set('n', 'gr', vim.lsp.buf.references, opts)
+        vim.keymap.set('n', '<space>rn', vim.lsp.buf.rename, opts)
+        vim.keymap.set({'n', 'v'}, '<space>ca', vim.lsp.buf.code_action, opts)
+        vim.keymap.set('n', '<space>f', function()
+          vim.lsp.buf.format { async = true }
+        end, opts)
       end,
-      capabilities = vim.lsp.protocol.make_client_capabilities(),
+      
+      -- Use the capabilities from nvim-cmp
+      capabilities = require('cmp_nvim_lsp').default_capabilities(),
+      
       filetype_to_server = {
         python = "pylsp",
+        c = "clangd",
+        cpp = "clangd",
+        cc = "clangd",
+        objc = "clangd",
+        objcpp = "clangd",
+        cmake = "neocmake",
       },
+      
       server_configs = {
         clangd = {
           filetypes = { "c", "cpp", "cc", "objc", "objcpp" },
@@ -255,7 +276,9 @@ use {
             return vim.lsp.util.find_git_ancestor(fname)
           end,
           single_file_support = true,
-          on_attach = function(client, bufnr) end,
+          on_attach = function(client, bufnr)
+            -- Optional: cmake-specific keybindings
+          end,
           init_options = {
             format = { enable = true },
             lint = { enable = true },
@@ -263,19 +286,24 @@ use {
           }
         },
         pylsp = {
-          plugins = {
-            black = { enabled = true },
-            autopep8 = { enabled = false },
-            yapf = { enabled = false },
-            pylint = { enabled = true, executable = "pylint" },
-            pyflakes = { enabled = false },
-            pycodestyle = { enabled = false },
-            pylsp_mypy = { enabled = true },
-            jedi_completion = { fuzzy = true },
-            pyls_isort = { enabled = true },
+          settings = {
+            pylsp = {
+              plugins = {
+                black = { enabled = true },
+                autopep8 = { enabled = false },
+                yapf = { enabled = false },
+                pylint = { enabled = true, executable = "pylint" },
+                pyflakes = { enabled = false },
+                pycodestyle = { enabled = false },
+                pylsp_mypy = { enabled = true },
+                jedi_completion = { fuzzy = true },
+                pyls_isort = { enabled = true },
+              },
+            },
           },
         }
       },
+      
       async_write_opts = {
         timeout = 30,
         debug = false,
