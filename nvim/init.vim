@@ -139,6 +139,9 @@ nnoremap <M-e> :NERDTreeToggle<CR>
 nnoremap <C-`> :terminal<CR>
 tnoremap <Esc> <C-\><C-n>
 
+"header/source code switch like IDE
+nnoremap <F4> :ClangdSwitchSourceHeader<cr>
+
 "fast find/replace word under cursor
 nnoremap <Leader>s :%s/\<<C-r><C-w>\>//g<Left><Left>
 "fast search under cursor
