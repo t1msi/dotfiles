@@ -1,5 +1,13 @@
 local dap = require("dap")
 
+local function qmake_build_dir()
+  local build_dir = vim.env.QMAKE_BUILD_DIR or "build"
+  if not vim.startswith(build_dir, "/") then
+    build_dir = vim.fs.joinpath(vim.fn.getcwd(), build_dir)
+  end
+  return build_dir
+end
+
 dap.adapters.debugpy = {
   type = "executable",
   command = "debugpy-adapter",
@@ -40,12 +48,14 @@ local cpp_configuration = {
   type = "lldb",
   request = "launch",
   name = "Launch executable",
-  cwd = "${workspaceFolder}",
+  cwd = function()
+    return vim.fs.joinpath(qmake_build_dir(), "staging")
+  end,
   stopOnEntry = false,
   program = function()
     return vim.fn.input({
       prompt = "Executable: ",
-      default = vim.fn.getcwd() .. "/staging/Course",
+      default = vim.fs.joinpath(qmake_build_dir(), "staging", "Course"),
       completion = "file",
     })
   end,

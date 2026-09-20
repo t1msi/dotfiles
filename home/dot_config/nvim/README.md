@@ -23,9 +23,11 @@ They can also be updated explicitly with `:TSUpdate`.
 | `<leader>f` | Format buffer or selection |
 | `<leader>ll` | Lint current buffer |
 | `<leader>tr` / `<leader>tt` | Run a task / toggle task list |
+| `<leader>tb` | Build the current qmake project |
 | `<F4>` | Switch C/C++ source and header |
 | `<F5>` / `<F10>` / `<F11>` / `<F12>` | Continue / step over / step into / step out |
 | `<leader>db` | Toggle breakpoint |
 
 The C/C++ debugger uses `lldb-dap` or `lldb-vscode`; Python uses
 `debugpy-adapter`. Tool installation belongs to the Ansible workstation role.
+Qmake tasks call the editor-independent `qmake-workflow` command.

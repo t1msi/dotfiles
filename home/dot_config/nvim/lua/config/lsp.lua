@@ -11,6 +11,7 @@ vim.lsp.config("clangd", {
     "--background-index",
     "--clang-tidy",
     "--header-insertion=iwyu",
+    "--compile-commands-dir=" .. (vim.env.QMAKE_BUILD_DIR or "build"),
   },
 })
 
