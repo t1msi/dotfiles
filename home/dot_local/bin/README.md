@@ -47,3 +47,27 @@ QtCreator should use its own shadow directory, the same three qmake arguments,
 `<buildDir>/staging/Course` as the executable, and `<buildDir>/staging` as the
 working directory. Keep QtCreator `.user` files and generated compilation
 databases out of Git.
+
+## Remote Neovide
+
+Apply these dotfiles on both machines, then launch a remote project from the
+local graphical workstation:
+
+```bash
+neovide-remote my-ssh-alias /home/me/src/project
+```
+
+The helper starts `~/.local/bin/nvim-remote-server` through SSH, forwards local
+`127.0.0.1:6666` to the same loopback-only port on the remote host, and attaches
+Neovide. Closing Neovide tears down the SSH session and the remote Neovim
+process. SSH hosts and keys remain in machine-local `~/.ssh/config`.
+
+Override a conflicting port without exposing either endpoint to the network:
+
+```bash
+NEOVIDE_LOCAL_PORT=7777 NVIM_REMOTE_PORT=7777 \
+  neovide-remote my-ssh-alias ~/src/project -- --maximized
+```
+
+For a two-terminal workflow, run `nvim-remote-server /path/to/project` on the
+remote machine and create an equivalent loopback SSH tunnel manually.

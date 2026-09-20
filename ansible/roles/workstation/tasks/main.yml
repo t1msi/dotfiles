@@ -77,6 +77,70 @@
     checksum: "sha256:{{ chezmoi_binary_sha256 }}"
     mode: "0755"
 
+- name: Download Zed
+  become: true
+  ansible.builtin.get_url:
+    url: "https://github.com/zed-industries/zed/releases/download/v{{ zed_version }}/zed-linux-x86_64.tar.gz"
+    dest: "/var/tmp/zed-{{ zed_version }}.tar.gz"
+    checksum: "sha256:{{ zed_archive_sha256 }}"
+    mode: "0644"
+
+- name: Create versioned Zed installation directory
+  become: true
+  ansible.builtin.file:
+    path: "/opt/zed-{{ zed_version }}"
+    state: directory
+    mode: "0755"
+
+- name: Install Zed
+  become: true
+  ansible.builtin.unarchive:
+    src: "/var/tmp/zed-{{ zed_version }}.tar.gz"
+    dest: "/opt/zed-{{ zed_version }}"
+    remote_src: true
+    extra_opts:
+      - --strip-components=1
+    creates: "/opt/zed-{{ zed_version }}/bin/zed"
+
+- name: Link Zed into PATH
+  become: true
+  ansible.builtin.file:
+    src: "/opt/zed-{{ zed_version }}/bin/zed"
+    dest: /usr/local/bin/zed
+    state: link
+    force: true
+
+- name: Download Neovide
+  become: true
+  ansible.builtin.get_url:
+    url: "https://github.com/neovide/neovide/releases/download/{{ neovide_version }}/neovide-linux-x86_64.tar"
+    dest: "/var/tmp/neovide-{{ neovide_version }}.tar"
+    checksum: "sha256:{{ neovide_archive_sha256 }}"
+    mode: "0644"
+
+- name: Create versioned Neovide installation directory
+  become: true
+  ansible.builtin.file:
+    path: "/opt/neovide-{{ neovide_version }}"
+    state: directory
+    mode: "0755"
+
+- name: Install Neovide
+  become: true
+  ansible.builtin.unarchive:
+    src: "/var/tmp/neovide-{{ neovide_version }}.tar"
+    dest: "/opt/neovide-{{ neovide_version }}"
+    remote_src: true
+    creates: "/opt/neovide-{{ neovide_version }}/neovide"
+
+- name: Link Neovide into PATH
+  become: true
+  ansible.builtin.file:
+    src: "/opt/neovide-{{ neovide_version }}/neovide"
+    dest: /usr/local/bin/neovide
+    state: link
+    force: true
+
 - name: Download Tree-sitter CLI
   become: true
   ansible.builtin.get_url:

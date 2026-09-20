@@ -7,6 +7,10 @@ tree_sitter_cli_version: 0.27.0
 tree_sitter_cli_archive_sha256: e4a3826bcd0fe099ee3a5617767374939cbc23c4a35b5b53f5fc04142525a2c1
 neocmakelsp_version: 0.11.1
 neocmakelsp_archive_sha256: fef0e2dcf55ff1b9df9ab77d74eabd9104392eff044d5f8b206f443089fa87c7
+zed_version: 1.20.2
+zed_archive_sha256: 647dc85e09fcd99cd175365a89b7b70ccf96469c4844eb8ae6eb83dfa82f7600
+neovide_version: 0.16.2
+neovide_archive_sha256: d3f4a50921b7144d6ab45096587d5f9bef3ad167f3d83e522e100b73efa73560
 
 qt_qmake_path: /opt/qt-everywhere-src-5.15.2/qtbase/bin/qmake
 

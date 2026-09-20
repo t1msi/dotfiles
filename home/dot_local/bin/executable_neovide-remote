@@ -1,0 +1,93 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+  cat <<'EOF'
+Usage: neovide-remote SSH_DESTINATION REMOTE_DIRECTORY [-- NEOVIDE_OPTIONS]
+
+Start headless Neovim on an SSH host, forward its loopback RPC socket, and
+attach local Neovide. The tunnel closes when Neovide exits.
+
+Environment:
+  NEOVIDE_LOCAL_PORT  Local loopback port (default: 6666)
+  NVIM_REMOTE_PORT    Remote loopback port (default: 6666)
+EOF
+}
+
+if (( $# < 2 )); then
+  usage >&2
+  exit 2
+fi
+
+ssh_destination=$1
+remote_directory=$2
+shift 2
+if [[ ${1:-} == -- ]]; then
+  shift
+fi
+
+local_port=${NEOVIDE_LOCAL_PORT:-6666}
+remote_port=${NVIM_REMOTE_PORT:-6666}
+
+for port in "$local_port" "$remote_port"; do
+  if [[ ! $port =~ ^[0-9]+$ ]] || (( port < 1 || port > 65535 )); then
+    printf 'neovide-remote: invalid port: %s\n' "$port" >&2
+    exit 2
+  fi
+done
+
+if [[ $ssh_destination == -* ]]; then
+  printf 'neovide-remote: SSH destination must not begin with a dash\n' >&2
+  exit 2
+fi
+
+for command in ssh nvim neovide ss; do
+  if ! command -v "$command" >/dev/null 2>&1; then
+    printf 'neovide-remote: required command is not installed: %s\n' "$command" >&2
+    exit 1
+  fi
+done
+
+if [[ -n $(ss -H -ltn "sport = :$local_port") ]]; then
+  printf 'neovide-remote: local port %s is already in use\n' "$local_port" >&2
+  exit 1
+fi
+
+printf -v quoted_directory '%q' "$remote_directory"
+remote_command="exec \"\$HOME/.local/bin/nvim-remote-server\" $quoted_directory $remote_port"
+
+ssh -n \
+  -o ExitOnForwardFailure=yes \
+  -o ServerAliveInterval=30 \
+  -L "127.0.0.1:$local_port:127.0.0.1:$remote_port" \
+  "$ssh_destination" "$remote_command" &
+ssh_pid=$!
+
+cleanup() {
+  if kill -0 "$ssh_pid" 2>/dev/null; then
+    kill "$ssh_pid" 2>/dev/null || true
+  fi
+  wait "$ssh_pid" 2>/dev/null || true
+}
+trap cleanup EXIT
+
+ready=false
+for _ in {1..100}; do
+  if ! kill -0 "$ssh_pid" 2>/dev/null; then
+    wait "$ssh_pid" || true
+    printf 'neovide-remote: SSH session ended before Neovim was ready\n' >&2
+    exit 1
+  fi
+  if nvim --server "127.0.0.1:$local_port" --remote-expr '1' >/dev/null 2>&1; then
+    ready=true
+    break
+  fi
+  sleep 0.1
+done
+
+if [[ $ready != true ]]; then
+  printf 'neovide-remote: timed out waiting for remote Neovim\n' >&2
+  exit 1
+fi
+
+neovide --server "127.0.0.1:$local_port" "$@"
