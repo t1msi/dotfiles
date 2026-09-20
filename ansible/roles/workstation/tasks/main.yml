@@ -1,0 +1,104 @@
+---
+- name: Install workstation packages
+  become: true
+  ansible.builtin.apt:
+    name:
+      - bear
+      - build-essential
+      - ccache
+      - clang
+      - clang-format
+      - clang-tidy
+      - clangd
+      - cmake
+      - curl
+      - fd-find
+      - gdb
+      - git
+      - jq
+      - make
+      - ninja-build
+      - npm
+      - pipx
+      - python3-pip
+      - python3-venv
+      - ripgrep
+      - shellcheck
+      - shfmt
+      - sqlite3
+      - tmux
+      - trash-cli
+      - unzip
+      - xclip
+      - xvfb
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Download Neovim
+  become: true
+  ansible.builtin.get_url:
+    url: "https://github.com/neovim/neovim/releases/download/v{{ neovim_version }}/nvim-linux-x86_64.tar.gz"
+    dest: "/var/tmp/nvim-{{ neovim_version }}.tar.gz"
+    checksum: "sha256:{{ neovim_archive_sha256 }}"
+    mode: "0644"
+
+- name: Create versioned Neovim installation directory
+  become: true
+  ansible.builtin.file:
+    path: "/opt/nvim-{{ neovim_version }}"
+    state: directory
+    mode: "0755"
+
+- name: Install Neovim
+  become: true
+  ansible.builtin.unarchive:
+    src: "/var/tmp/nvim-{{ neovim_version }}.tar.gz"
+    dest: "/opt/nvim-{{ neovim_version }}"
+    remote_src: true
+    extra_opts:
+      - --strip-components=1
+    creates: "/opt/nvim-{{ neovim_version }}/bin/nvim"
+
+- name: Link Neovim into PATH
+  become: true
+  ansible.builtin.file:
+    src: "/opt/nvim-{{ neovim_version }}/bin/nvim"
+    dest: /usr/local/bin/nvim
+    state: link
+    force: true
+
+- name: Install chezmoi
+  become: true
+  ansible.builtin.get_url:
+    url: "https://github.com/twpayne/chezmoi/releases/download/v{{ chezmoi_version }}/chezmoi-linux-amd64"
+    dest: /usr/local/bin/chezmoi
+    checksum: "sha256:{{ chezmoi_binary_sha256 }}"
+    mode: "0755"
+
+- name: Install pinned npm language servers
+  become: true
+  community.general.npm:
+    name: "{{ item.name }}"
+    version: "{{ item.version }}"
+    global: true
+    state: present
+  loop: "{{ npm_language_servers }}"
+
+- name: Install pinned Python developer tools for the workstation user
+  ansible.builtin.pip:
+    name: "{{ python_developer_packages }}"
+    extra_args: --user
+    state: present
+
+- name: Check the configured Qt qmake
+  ansible.builtin.stat:
+    path: "{{ qt_qmake_path }}"
+  register: qt_qmake
+
+- name: Report missing external Qt SDK
+  ansible.builtin.debug:
+    msg: >-
+      Qt qmake was not found at {{ qt_qmake_path }}. Install the project Qt 5.15
+      SDK separately or override qt_qmake_path before using qmake-workflow.
+  when: not (qt_qmake.stat.executable | default(false))

@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+
+if [[ $(id -u) -eq 0 ]]; then
+    echo "Run bootstrap as the workstation user, not root." >&2
+    exit 1
+fi
+
+sudo apt-get update
+sudo apt-get install --yes ansible git python3-apt
+
+ansible-galaxy collection install \
+    --requirements-file "$repo_dir/ansible/requirements.yml"
+ansible-playbook \
+    --inventory "$repo_dir/ansible/inventory/localhost.yml" \
+    "$repo_dir/ansible/workstation.yml"
+
+chezmoi init --source "$repo_dir"
+chezmoi diff
+chezmoi apply
