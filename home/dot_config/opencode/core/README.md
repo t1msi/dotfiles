@@ -32,17 +32,20 @@ Do **not** copy project-specific sibling agents, instructions, or compactons int
 }
 ```
 
-Agents and commands are **not** loaded from `core/` automatically. Symlink only
-the definitions a project uses into `.opencode/agent/` and
-`.opencode/command/`.
+Agents and commands are **not** loaded from `core/` automatically. Chezmoi
+exposes the shared definitions through relative links in the global discovery
+directories:
 
-```bash
-ln -s ~/.config/opencode/core/command/save-compaction.md .opencode/command/save-compaction.md
-ln -s ~/.config/opencode/core/agent/harness-maintainer.md .opencode/agent/harness-maintainer.md
+```text
+~/.config/opencode/agents/harness-maintainer.md -> ../core/agent/harness-maintainer.md
+~/.config/opencode/commands/adr.md -> ../core/command/adr.md
+~/.config/opencode/commands/harvest-session.md -> ../core/command/harvest-session.md
+~/.config/opencode/commands/save-compaction.md -> ../core/command/save-compaction.md
 ```
 
-The host project uses `skills.paths` and instruction globs for core files, with
-selected agents and commands exposed under its `.opencode/` directory.
+The host project uses `skills.paths` and instruction globs for core files.
+Project-local agent and command files are only needed for product-specific
+definitions or deliberate overrides of the shared definitions.
 
 ## After copy
 
