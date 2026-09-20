@@ -19,7 +19,6 @@
       - lldb
       - make
       - ninja-build
-      - npm
       - pipx
       - python3-pip
       - python3-venv
@@ -32,6 +31,7 @@
       - unzip
       - xclip
       - xvfb
+      - xz-utils
     state: present
     update_cache: true
     cache_valid_time: 3600
@@ -76,6 +76,44 @@
     dest: /usr/local/bin/chezmoi
     checksum: "sha256:{{ chezmoi_binary_sha256 }}"
     mode: "0755"
+
+- name: Download Node.js
+  become: true
+  ansible.builtin.get_url:
+    url: "https://nodejs.org/dist/v{{ nodejs_version }}/node-v{{ nodejs_version }}-linux-x64.tar.xz"
+    dest: "/var/tmp/node-{{ nodejs_version }}.tar.xz"
+    checksum: "sha256:{{ nodejs_archive_sha256 }}"
+    mode: "0644"
+
+- name: Create versioned Node.js installation directory
+  become: true
+  ansible.builtin.file:
+    path: "/opt/node-{{ nodejs_version }}"
+    state: directory
+    mode: "0755"
+
+- name: Install Node.js
+  become: true
+  ansible.builtin.unarchive:
+    src: "/var/tmp/node-{{ nodejs_version }}.tar.xz"
+    dest: "/opt/node-{{ nodejs_version }}"
+    remote_src: true
+    extra_opts:
+      - --strip-components=1
+    creates: "/opt/node-{{ nodejs_version }}/bin/node"
+
+- name: Link Node.js tools into PATH
+  become: true
+  ansible.builtin.file:
+    src: "/opt/node-{{ nodejs_version }}/bin/{{ item }}"
+    dest: "/usr/local/bin/{{ item }}"
+    state: link
+    force: true
+  loop:
+    - corepack
+    - node
+    - npm
+    - npx
 
 - name: Download Zed
   become: true
@@ -208,10 +246,14 @@
 - name: Install pinned npm language servers
   become: true
   community.general.npm:
+    executable: /usr/local/bin/npm
     name: "{{ item.name }}"
     version: "{{ item.version }}"
     global: true
     state: present
+  environment:
+    NPM_CONFIG_PREFIX: /usr/local
+    PATH: /usr/local/bin:/usr/bin:/bin
   loop: "{{ npm_language_servers }}"
 
 - name: Install pinned Python developer tools for the workstation user

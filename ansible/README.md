@@ -27,3 +27,7 @@ repository. Override it with `-e qt_qmake_path=/path/to/qmake`.
 Zed and Neovide are installed from pinned upstream x86_64 release archives.
 Zed uses its native SSH Remote Development support; Neovide uses the
 loopback-only helpers documented in `home/dot_local/bin/README.md`.
+
+Node.js and its bundled npm are also installed from a pinned upstream archive.
+Do not add Ubuntu's separate `npm` package: it conflicts with NodeSource and
+other self-contained Node.js packages.
