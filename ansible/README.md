@@ -6,13 +6,17 @@ Run the repository bootstrap from an Ubuntu x86_64 workstation:
 ./bootstrap
 ```
 
-The bootstrap installs Ansible, provisions development dependencies, previews
-the chezmoi changes, and applies them. The playbook is also usable directly:
+The bootstrap creates a pinned Ansible environment under
+`~/.local/share/dotfiles/ansible`, provisions development dependencies,
+previews the chezmoi changes, and applies them. The isolated environment avoids
+Ubuntu's outdated Ansible package and user-site Python package conflicts.
+
+The playbook is also usable directly after bootstrap:
 
 ```bash
-ansible-galaxy collection install -r ansible/requirements.yml
-ansible-playbook -i ansible/inventory/localhost.yml ansible/workstation.yml --check --diff
-ansible-playbook -i ansible/inventory/localhost.yml ansible/workstation.yml
+~/.local/share/dotfiles/ansible/bin/ansible-galaxy collection install -r ansible/requirements.yml
+~/.local/share/dotfiles/ansible/bin/ansible-playbook -i ansible/inventory/localhost.yml ansible/workstation.yml --check --diff
+~/.local/share/dotfiles/ansible/bin/ansible-playbook -i ansible/inventory/localhost.yml ansible/workstation.yml
 ```
 
 The qmake workflow defaults to
