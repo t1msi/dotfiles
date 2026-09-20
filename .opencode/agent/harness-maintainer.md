@@ -1,0 +1,1 @@
+../../home/dot_config/opencode/core/agent/harness-maintainer.md
