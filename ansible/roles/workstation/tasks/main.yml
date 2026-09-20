@@ -94,11 +94,11 @@
 - name: Check the configured Qt qmake
   ansible.builtin.stat:
     path: "{{ qt_qmake_path }}"
-  register: qt_qmake
+  register: workstation_qt_qmake
 
 - name: Report missing external Qt SDK
   ansible.builtin.debug:
     msg: >-
       Qt qmake was not found at {{ qt_qmake_path }}. Install the project Qt 5.15
       SDK separately or override qt_qmake_path before using qmake-workflow.
-  when: not (qt_qmake.stat.executable | default(false))
+  when: not (workstation_qt_qmake.stat.executable | default(false))
