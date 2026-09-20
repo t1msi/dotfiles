@@ -16,6 +16,7 @@
       - gdb
       - git
       - jq
+      - lldb
       - make
       - ninja-build
       - npm
@@ -75,6 +76,70 @@
     dest: /usr/local/bin/chezmoi
     checksum: "sha256:{{ chezmoi_binary_sha256 }}"
     mode: "0755"
+
+- name: Download Tree-sitter CLI
+  become: true
+  ansible.builtin.get_url:
+    url: >-
+      https://github.com/tree-sitter/tree-sitter/releases/download/v{{ tree_sitter_cli_version }}/tree-sitter-cli-linux-x64.zip
+    dest: "/var/tmp/tree-sitter-cli-{{ tree_sitter_cli_version }}.zip"
+    checksum: "sha256:{{ tree_sitter_cli_archive_sha256 }}"
+    mode: "0644"
+
+- name: Create versioned Tree-sitter CLI installation directory
+  become: true
+  ansible.builtin.file:
+    path: "/opt/tree-sitter-cli-{{ tree_sitter_cli_version }}"
+    state: directory
+    mode: "0755"
+
+- name: Install Tree-sitter CLI
+  become: true
+  ansible.builtin.unarchive:
+    src: "/var/tmp/tree-sitter-cli-{{ tree_sitter_cli_version }}.zip"
+    dest: "/opt/tree-sitter-cli-{{ tree_sitter_cli_version }}"
+    remote_src: true
+    creates: "/opt/tree-sitter-cli-{{ tree_sitter_cli_version }}/tree-sitter"
+
+- name: Link Tree-sitter CLI into PATH
+  become: true
+  ansible.builtin.file:
+    src: "/opt/tree-sitter-cli-{{ tree_sitter_cli_version }}/tree-sitter"
+    dest: /usr/local/bin/tree-sitter
+    state: link
+    force: true
+
+- name: Download neocmakelsp
+  become: true
+  ansible.builtin.get_url:
+    url: >-
+      https://github.com/neocmakelsp/neocmakelsp/releases/download/v{{ neocmakelsp_version }}/neocmakelsp-x86_64-unknown-linux-gnu.tar.gz
+    dest: "/var/tmp/neocmakelsp-{{ neocmakelsp_version }}.tar.gz"
+    checksum: "sha256:{{ neocmakelsp_archive_sha256 }}"
+    mode: "0644"
+
+- name: Create versioned neocmakelsp installation directory
+  become: true
+  ansible.builtin.file:
+    path: "/opt/neocmakelsp-{{ neocmakelsp_version }}"
+    state: directory
+    mode: "0755"
+
+- name: Install neocmakelsp
+  become: true
+  ansible.builtin.unarchive:
+    src: "/var/tmp/neocmakelsp-{{ neocmakelsp_version }}.tar.gz"
+    dest: "/opt/neocmakelsp-{{ neocmakelsp_version }}"
+    remote_src: true
+    creates: "/opt/neocmakelsp-{{ neocmakelsp_version }}/neocmakelsp"
+
+- name: Link neocmakelsp into PATH
+  become: true
+  ansible.builtin.file:
+    src: "/opt/neocmakelsp-{{ neocmakelsp_version }}/neocmakelsp"
+    dest: /usr/local/bin/neocmakelsp
+    state: link
+    force: true
 
 - name: Install pinned npm language servers
   become: true

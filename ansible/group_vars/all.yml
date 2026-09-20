@@ -3,6 +3,10 @@ neovim_version: 0.12.2
 neovim_archive_sha256: 31cf85945cb600d96cdf69f88bc68bec814acbff50863c5546adef3a1bcef260
 chezmoi_version: 2.72.2
 chezmoi_binary_sha256: 64a07b2e956be7ea18a9d26cbc76aab96a8b45a6b7b6f58c41ff782a7dc361ab
+tree_sitter_cli_version: 0.27.0
+tree_sitter_cli_archive_sha256: e4a3826bcd0fe099ee3a5617767374939cbc23c4a35b5b53f5fc04142525a2c1
+neocmakelsp_version: 0.11.1
+neocmakelsp_archive_sha256: fef0e2dcf55ff1b9df9ab77d74eabd9104392eff044d5f8b206f443089fa87c7
 
 qt_qmake_path: /opt/qt-everywhere-src-5.15.2/qtbase/bin/qmake
 
