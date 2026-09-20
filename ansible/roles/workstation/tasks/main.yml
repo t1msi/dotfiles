@@ -179,34 +179,79 @@
     state: link
     force: true
 
-- name: Download Tree-sitter CLI
-  become: true
-  ansible.builtin.get_url:
-    url: >-
-      https://github.com/tree-sitter/tree-sitter/releases/download/v{{ tree_sitter_cli_version }}/tree-sitter-cli-linux-x64.zip
-    dest: "/var/tmp/tree-sitter-cli-{{ tree_sitter_cli_version }}.zip"
-    checksum: "sha256:{{ tree_sitter_cli_archive_sha256 }}"
-    mode: "0644"
+- name: Check the versioned Tree-sitter CLI
+  ansible.builtin.command:
+    argv:
+      - "/opt/tree-sitter-cli-{{ tree_sitter_cli_version }}/bin/tree-sitter"
+      - --version
+  register: workstation_tree_sitter_cli
+  changed_when: false
+  failed_when: false
+  check_mode: false
 
-- name: Create versioned Tree-sitter CLI installation directory
-  become: true
-  ansible.builtin.file:
-    path: "/opt/tree-sitter-cli-{{ tree_sitter_cli_version }}"
-    state: directory
-    mode: "0755"
+- name: Build a host-compatible Tree-sitter CLI
+  when: >-
+    workstation_tree_sitter_cli.rc != 0 or
+    ('tree-sitter ' ~ tree_sitter_cli_version) not in workstation_tree_sitter_cli.stdout
+  block:
+    - name: Download rustup-init for the Tree-sitter build
+      become: true
+      ansible.builtin.get_url:
+        url: >-
+          https://static.rust-lang.org/rustup/archive/{{ rustup_version }}/x86_64-unknown-linux-gnu/rustup-init
+        dest: "/var/tmp/rustup-init-{{ rustup_version }}"
+        checksum: "sha256:{{ rustup_init_sha256 }}"
+        mode: "0755"
 
-- name: Install Tree-sitter CLI
-  become: true
-  ansible.builtin.unarchive:
-    src: "/var/tmp/tree-sitter-cli-{{ tree_sitter_cli_version }}.zip"
-    dest: "/opt/tree-sitter-cli-{{ tree_sitter_cli_version }}"
-    remote_src: true
-    creates: "/opt/tree-sitter-cli-{{ tree_sitter_cli_version }}/tree-sitter"
+    - name: Remove an unusable Tree-sitter CLI installation
+      become: true
+      ansible.builtin.file:
+        path: "/opt/tree-sitter-cli-{{ tree_sitter_cli_version }}"
+        state: absent
+
+    - name: Install the temporary Rust build toolchain
+      become: true
+      ansible.builtin.command:
+        argv:
+          - "/var/tmp/rustup-init-{{ rustup_version }}"
+          - --default-toolchain
+          - "{{ tree_sitter_rust_version }}"
+          - --profile
+          - minimal
+          - --no-modify-path
+          - -y
+      environment:
+        CARGO_HOME: /var/tmp/tree-sitter-build/cargo
+        RUSTUP_HOME: /var/tmp/tree-sitter-build/rustup
+      changed_when: true
+
+    - name: Compile and install Tree-sitter CLI
+      become: true
+      ansible.builtin.command:
+        argv:
+          - /var/tmp/tree-sitter-build/cargo/bin/cargo
+          - install
+          - --locked
+          - --version
+          - "{{ tree_sitter_cli_version }}"
+          - --root
+          - "/opt/tree-sitter-cli-{{ tree_sitter_cli_version }}"
+          - tree-sitter-cli
+      environment:
+        CARGO_HOME: /var/tmp/tree-sitter-build/cargo
+        RUSTUP_HOME: /var/tmp/tree-sitter-build/rustup
+      changed_when: true
+  always:
+    - name: Remove the temporary Rust build toolchain
+      become: true
+      ansible.builtin.file:
+        path: /var/tmp/tree-sitter-build
+        state: absent
 
 - name: Link Tree-sitter CLI into PATH
   become: true
   ansible.builtin.file:
-    src: "/opt/tree-sitter-cli-{{ tree_sitter_cli_version }}/tree-sitter"
+    src: "/opt/tree-sitter-cli-{{ tree_sitter_cli_version }}/bin/tree-sitter"
     dest: /usr/local/bin/tree-sitter
     state: link
     force: true

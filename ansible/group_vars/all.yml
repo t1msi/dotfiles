@@ -6,7 +6,9 @@ chezmoi_binary_sha256: 64a07b2e956be7ea18a9d26cbc76aab96a8b45a6b7b6f58c41ff782a7
 nodejs_version: 22.22.2
 nodejs_archive_sha256: 88fd1ce767091fd8d4a99fdb2356e98c819f93f3b1f8663853a2dee9b438068a
 tree_sitter_cli_version: 0.27.0
-tree_sitter_cli_archive_sha256: e4a3826bcd0fe099ee3a5617767374939cbc23c4a35b5b53f5fc04142525a2c1
+tree_sitter_rust_version: 1.90.0
+rustup_version: 1.29.0
+rustup_init_sha256: 4acc9acc76d5079515b46346a485974457b5a79893cfb01112423c89aeb5aa10
 neocmakelsp_version: 0.11.1
 neocmakelsp_archive_sha256: fef0e2dcf55ff1b9df9ab77d74eabd9104392eff044d5f8b206f443089fa87c7
 zed_version: 1.20.2
