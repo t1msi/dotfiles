@@ -1,0 +1,36 @@
+---
+neovim_version: 0.12.2
+neovim_archive_sha256: 31cf85945cb600d96cdf69f88bc68bec814acbff50863c5546adef3a1bcef260
+chezmoi_version: 2.72.2
+chezmoi_binary_sha256: 64a07b2e956be7ea18a9d26cbc76aab96a8b45a6b7b6f58c41ff782a7dc361ab
+nodejs_version: 22.22.2
+nodejs_archive_sha256: 88fd1ce767091fd8d4a99fdb2356e98c819f93f3b1f8663853a2dee9b438068a
+tree_sitter_cli_version: 0.27.0
+tree_sitter_rust_version: 1.90.0
+rustup_version: 1.29.0
+rustup_init_sha256: 4acc9acc76d5079515b46346a485974457b5a79893cfb01112423c89aeb5aa10
+neocmakelsp_version: 0.11.1
+neocmakelsp_archive_sha256: fef0e2dcf55ff1b9df9ab77d74eabd9104392eff044d5f8b206f443089fa87c7
+zed_version: 1.20.2
+zed_archive_sha256: 647dc85e09fcd99cd175365a89b7b70ccf96469c4844eb8ae6eb83dfa82f7600
+neovide_version: 0.16.2
+neovide_archive_sha256: d3f4a50921b7144d6ab45096587d5f9bef3ad167f3d83e522e100b73efa73560
+
+qt_qmake_path: /opt/qt-everywhere-src-5.15.2/qtbase/bin/qmake
+
+npm_language_servers:
+  - name: bash-language-server
+    version: 5.8.1
+  - name: yaml-language-server
+    version: 1.24.0
+  - name: "@ansible/ansible-language-server"
+    version: 26.6.0
+  - name: sql-language-server
+    version: 1.7.1
+  - name: vscode-langservers-extracted
+    version: 4.10.0
+
+python_developer_packages:
+  - basedpyright==1.40.1
+  - debugpy==1.8.22
+  - ruff==0.16.8

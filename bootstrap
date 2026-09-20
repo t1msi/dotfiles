@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+set -euo pipefail
+umask 022
+
+repo_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+ansible_dir=$HOME/.local/share/dotfiles/ansible
+
+if [[ $(id -u) -eq 0 ]]; then
+    echo "Run bootstrap as the workstation user, not root." >&2
+    exit 1
+fi
+
+sudo apt-get update
+sudo apt-get install --yes git python3-apt python3-venv
+
+python3 -m venv "$ansible_dir"
+"$ansible_dir/bin/python" -m pip install \
+    --disable-pip-version-check \
+    --upgrade \
+    --requirement "$repo_dir/ansible/requirements-bootstrap.txt"
+
+"$ansible_dir/bin/ansible-galaxy" collection install \
+    --requirements-file "$repo_dir/ansible/requirements.yml"
+"$ansible_dir/bin/ansible-lint" "$repo_dir/ansible/workstation.yml"
+"$ansible_dir/bin/ansible-playbook" \
+    --inventory "$repo_dir/ansible/inventory/localhost.yml" \
+    "$repo_dir/ansible/workstation.yml"
+
+chezmoi --source "$repo_dir" diff
+chezmoi --source "$repo_dir" apply

@@ -1,0 +1,33 @@
+# Neovim
+
+This is a Lua-only Neovim 0.12 configuration. Plugins are installed by
+`vim.pack` and pinned by `nvim-pack-lock.json`.
+
+On first start, Neovim installs plugins and the configured Tree-sitter parsers.
+Update plugins interactively, review the proposed revisions, and write the
+confirmation buffer:
+
+```vim
+:lua vim.pack.update()
+```
+
+Tree-sitter parsers update automatically after the Tree-sitter plugin changes.
+They can also be updated explicitly with `:TSUpdate`.
+
+## Main mappings
+
+| Mapping | Action |
+|---|---|
+| `<leader>ff` / `<leader>fg` | Find files / search text |
+| `<A-e>` | Toggle file tree |
+| `<leader>f` | Format buffer or selection |
+| `<leader>ll` | Lint current buffer |
+| `<leader>tr` / `<leader>tt` | Run a task / toggle task list |
+| `<leader>tb` | Build the current qmake project |
+| `<F4>` | Switch C/C++ source and header |
+| `<F5>` / `<F10>` / `<F11>` / `<F12>` | Continue / step over / step into / step out |
+| `<leader>db` | Toggle breakpoint |
+
+The C/C++ debugger uses `lldb-dap` or `lldb-vscode`; Python uses
+`debugpy-adapter`. Tool installation belongs to the Ansible workstation role.
+Qmake tasks call the editor-independent `qmake-workflow` command.

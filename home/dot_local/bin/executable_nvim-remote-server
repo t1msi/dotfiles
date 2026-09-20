@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+  cat <<'EOF'
+Usage: nvim-remote-server [DIRECTORY] [PORT]
+
+Start headless Neovim in DIRECTORY with RPC listening only on loopback.
+PORT defaults to NVIM_REMOTE_PORT or 6666.
+EOF
+}
+
+if (( $# > 2 )); then
+  usage >&2
+  exit 2
+fi
+
+directory=${1:-$PWD}
+port=${2:-${NVIM_REMOTE_PORT:-6666}}
+
+if [[ ! $port =~ ^[0-9]+$ ]] || (( port < 1 || port > 65535 )); then
+  printf 'nvim-remote-server: invalid port: %s\n' "$port" >&2
+  exit 2
+fi
+
+case $directory in
+  \~) directory=$HOME ;;
+  \~/*) directory=$HOME/${directory:2} ;;
+esac
+
+if [[ ! -d $directory ]]; then
+  printf 'nvim-remote-server: directory does not exist: %s\n' "$directory" >&2
+  exit 1
+fi
+
+if ! command -v nvim >/dev/null 2>&1; then
+  printf 'nvim-remote-server: nvim is not installed\n' >&2
+  exit 1
+fi
+
+cd -- "$directory"
+exec nvim --headless --listen "127.0.0.1:$port"

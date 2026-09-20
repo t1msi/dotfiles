@@ -1,0 +1,44 @@
+[
+  {
+    "label": "qmake: configure",
+    "command": "qmake-workflow",
+    "args": ["configure"],
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "save": "all"
+  },
+  {
+    "label": "qmake: build",
+    "command": "qmake-workflow",
+    "args": ["build"],
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "save": "all"
+  },
+  {
+    "label": "qmake: compilation database",
+    "command": "qmake-workflow",
+    "args": ["compdb"],
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "save": "all"
+  },
+  {
+    "label": "qmake: lint",
+    "command": "qmake-workflow",
+    "args": ["lint"],
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "save": "all"
+  },
+  {
+    "label": "qmake: run",
+    "command": "qmake-workflow",
+    "args": ["run"],
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "save": "all"
+  },
+  {
+    "label": "qmake: debug",
+    "command": "qmake-workflow",
+    "args": ["debug"],
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "save": "all"
+  }
+]

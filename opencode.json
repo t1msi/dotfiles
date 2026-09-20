@@ -1,0 +1,17 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": [
+    "AGENTS.md",
+    "home/dot_config/opencode/core/instructions/*.md",
+    ".opencode/instructions/*.md"
+  ],
+  "skills": {
+    "paths": [
+      "home/dot_config/opencode/core/skills",
+      ".opencode/skills"
+    ]
+  },
+  "compaction": {
+    "auto": true
+  }
+}

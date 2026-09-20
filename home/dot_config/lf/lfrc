@@ -1,0 +1,9 @@
+set hidden true
+set shell bash
+set shellopts '-eu'
+
+cmd trash ${{
+    trash-put -- $fx
+}}
+
+map D trash
