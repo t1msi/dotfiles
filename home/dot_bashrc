@@ -1,0 +1,24 @@
+# Stop here when Bash is not interactive.
+case $- in
+  *i*) ;;
+  *) return ;;
+esac
+
+HISTCONTROL=ignoreboth:erasedups
+HISTSIZE=10000
+HISTFILESIZE=20000
+shopt -s histappend checkwinsize
+
+alias ls='ls --color=auto'
+alias grep='grep --color=auto'
+
+export EDITOR=nvim
+export VISUAL=nvim
+export PATH="$HOME/.local/bin:$PATH"
+
+PS1='[\u@\h \W]\$ '
+
+# Keep machine-specific environment and secrets outside this repository.
+if [[ -r "$HOME/.bashrc.local" ]]; then
+  source "$HOME/.bashrc.local"
+fi
