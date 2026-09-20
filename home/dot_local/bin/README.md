@@ -26,6 +26,15 @@ qmake-workflow run
 qmake-workflow debug --some-application-argument
 ```
 
+The QGC project normally requires its `course-qt-5.15.2` and
+`course-openssl-1.1.1` packages. On a development host where the equivalent
+dependencies are already present outside those packages, use the project's
+explicit bypass rather than changing the shared default:
+
+```bash
+qmake-workflow configure CONFIG+=unsafe_course_deps
+```
+
 `compdb` intentionally performs a clean rebuild through Bear so the resulting
 `build/compile_commands.json` is complete. `lint` accepts optional file regular
 expressions understood by `run-clang-tidy`. Pass arbitrary extra qmake options
