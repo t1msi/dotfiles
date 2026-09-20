@@ -22,8 +22,9 @@ build state are deliberately not managed here.
 Preview configuration changes before applying them:
 
 ```bash
-chezmoi diff
-chezmoi apply
+cd /path/to/dotfiles
+chezmoi --source "$PWD" diff
+chezmoi --source "$PWD" apply
 ```
 
 Provisioning and editor-specific workflows are documented alongside their

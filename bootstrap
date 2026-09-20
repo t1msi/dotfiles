@@ -25,6 +25,5 @@ python3 -m venv "$ansible_dir"
     --inventory "$repo_dir/ansible/inventory/localhost.yml" \
     "$repo_dir/ansible/workstation.yml"
 
-chezmoi init --source "$repo_dir"
-chezmoi diff
-chezmoi apply
+chezmoi --source "$repo_dir" diff
+chezmoi --source "$repo_dir" apply
