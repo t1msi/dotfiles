@@ -35,6 +35,7 @@ register_task("qmake", "run", "run", overseer.TAG.RUN)
 
 register_task("cmake", "configure", "configure", overseer.TAG.BUILD)
 register_task("cmake", "build", "build", overseer.TAG.BUILD)
+register_task("cmake", "test", "test", overseer.TAG.TEST)
 register_task("cmake", "clean", "clean", overseer.TAG.BUILD)
 register_task("cmake", "clear", "clear", overseer.TAG.BUILD)
 register_task("cmake", "rebuild", "rebuild", overseer.TAG.BUILD)

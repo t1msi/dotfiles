@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+    cat <<'EOF'
+Usage: new-cmake-project DIRECTORY [PROJECT_NAME]
+
+Create a minimal C++17 CMake project. PROJECT_NAME defaults to the directory
+name and must contain only letters, digits, underscores, and hyphens.
+EOF
+}
+
+die() {
+    printf 'new-cmake-project: %s\n' "$*" >&2
+    exit 1
+}
+
+if (( $# < 1 || $# > 2 )); then
+    usage >&2
+    exit 2
+fi
+
+target=${1%/}
+[[ -n $target ]] || die "directory must not be empty"
+project_name=${2:-${target##*/}}
+[[ $project_name =~ ^[A-Za-z_][A-Za-z0-9_-]*$ ]] || die "invalid project name: $project_name"
+
+template_dir=${CMAKE_PROJECT_TEMPLATE:-$HOME/.local/share/project-templates/cmake}
+[[ -f $template_dir/CMakeLists.txt ]] || die "template not found: $template_dir"
+if [[ -e $target ]]; then
+    [[ -d $target && -z $(find "$target" -mindepth 1 -maxdepth 1 -print -quit) ]] || die "target already exists and is not empty: $target"
+else
+    mkdir -p -- "$target"
+fi
+
+cp -R -- "$template_dir"/. "$target"/
+sed -i "s/@PROJECT_NAME@/$project_name/g" \
+    "$target/CMakeLists.txt" \
+    "$target/README.md" \
+    "$target/src/main.cpp"
+printf 'Created %s in %s\n' "$project_name" "$target"

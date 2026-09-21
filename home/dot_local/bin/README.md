@@ -68,6 +68,7 @@ projects. It discovers the nearest `CMakeLists.txt`, defaults to an out-of-sourc
 ```bash
 cmake-workflow configure
 cmake-workflow build
+cmake-workflow test
 cmake-workflow clean
 cmake-workflow clear
 cmake-workflow rebuild
@@ -77,6 +78,14 @@ cmake-workflow rebuild
 override the defaults. Project-specific configure options belong in
 `.cmake-workflow.args`, one argument per line. As with qmake, `clean` preserves
 the configured build tree while `clear` removes it and `rebuild` recreates it.
+
+Create a small C++17 CMake project that is ready for these commands with:
+
+```bash
+new-cmake-project ~/src/example
+```
+
+The generated smoke test runs through `cmake-workflow test`.
 
 ## Remote Neovide
 

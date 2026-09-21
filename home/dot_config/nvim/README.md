@@ -42,7 +42,7 @@ CMake, QML, and Pkl use their provisioned language servers; `.pro`, `.pri`, and
 grammar or language server.
 
 The task picker includes configure, build, clean, clear, and rebuild operations
-for qmake and CMake. `clean` preserves configuration; `clear` deletes the build
-directory; `rebuild` clears, configures, and builds. Project-specific configure
-arguments belong in `.qmake-workflow.args` or `.cmake-workflow.args`, one per
-line.
+for qmake and CMake, plus CMake tests. `clean` preserves configuration; `clear`
+deletes the build directory; `rebuild` clears, configures, and builds.
+Project-specific configure arguments belong in `.qmake-workflow.args` or
+`.cmake-workflow.args`, one per line.

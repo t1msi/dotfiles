@@ -37,6 +37,7 @@ sequences. Vim's built-in `<C-w>s` and `<C-w>v` create horizontal and vertical
 splits; `<C-w>c` closes the current pane and `<C-w>o` keeps only that pane.
 
 The task picker includes qmake and CMake configure, build, clean, clear, and
-rebuild operations. `clean` preserves the configured tree; `clear` removes it;
-`rebuild` clears, configures, and builds. Fixed project configure options belong
-in `.qmake-workflow.args` or `.cmake-workflow.args`, one argument per line.
+rebuild operations, plus CMake tests. `clean` preserves the configured tree;
+`clear` removes it; `rebuild` clears, configures, and builds. Fixed project
+configure options belong in `.qmake-workflow.args` or `.cmake-workflow.args`,
+one argument per line.

@@ -9,6 +9,7 @@ Commands:
   show                 Print the resolved project and build paths
   configure [ARGS...]  Configure with extra CMake arguments
   build [ARGS...]      Build with extra cmake --build arguments
+  test [ARGS...]       Run CTest with extra arguments
   clean                Run the generated clean target
   clear                Remove the out-of-source build directory
   rebuild [ARGS...]    Clear, configure with extra CMake arguments, and build
@@ -142,6 +143,11 @@ case $command_name in
         ;;
     build)
         build_project "$@"
+        ;;
+    test)
+        ensure_configured
+        print_command ctest --test-dir "$build_dir" --output-on-failure "$@"
+        ctest --test-dir "$build_dir" --output-on-failure "$@"
         ;;
     clean)
         ensure_configured
