@@ -29,12 +29,22 @@
       - tmux
       - trash-cli
       - unzip
-      - xclip
-      - xvfb
       - xz-utils
     state: present
     update_cache: true
     cache_valid_time: 3600
+
+- name: Install graphical workstation packages
+  become: true
+  ansible.builtin.apt:
+    name:
+      - desktop-file-utils
+      - patchelf
+      - vulkan-tools
+      - xclip
+      - xvfb
+    state: present
+  when: workstation_gui_enabled | bool
 
 - name: Download Neovim
   become: true
@@ -115,69 +125,164 @@
     - npm
     - npx
 
-- name: Download Zed
-  become: true
-  ansible.builtin.get_url:
-    url: "https://github.com/zed-industries/zed/releases/download/v{{ zed_version }}/zed-linux-x86_64.tar.gz"
-    dest: "/var/tmp/zed-{{ zed_version }}.tar.gz"
-    checksum: "sha256:{{ zed_archive_sha256 }}"
-    mode: "0644"
-
-- name: Create versioned Zed installation directory
+- name: Create graphical application directories
   become: true
   ansible.builtin.file:
-    path: "/opt/zed-{{ zed_version }}"
+    path: "{{ item }}"
     state: directory
     mode: "0755"
+  loop:
+    - /usr/local/share/applications
+    - /usr/local/share/icons/hicolor/512x512/apps
+    - /usr/local/share/icons/hicolor/scalable/apps
+  when: workstation_gui_enabled | bool
 
-- name: Install Zed
-  become: true
-  ansible.builtin.unarchive:
-    src: "/var/tmp/zed-{{ zed_version }}.tar.gz"
-    dest: "/opt/zed-{{ zed_version }}"
-    remote_src: true
-    extra_opts:
-      - --strip-components=1
-    creates: "/opt/zed-{{ zed_version }}/bin/zed"
+- name: Install Zed graphical editor
+  when: workstation_gui_enabled | bool
+  block:
+    - name: Download Zed
+      become: true
+      ansible.builtin.get_url:
+        url: "https://github.com/zed-industries/zed/releases/download/v{{ zed_version }}/zed-linux-x86_64.tar.gz"
+        dest: "/var/tmp/zed-{{ zed_version }}.tar.gz"
+        checksum: "sha256:{{ zed_archive_sha256 }}"
+        mode: "0644"
 
-- name: Link Zed into PATH
-  become: true
-  ansible.builtin.file:
-    src: "/opt/zed-{{ zed_version }}/bin/zed"
-    dest: /usr/local/bin/zed
-    state: link
-    force: true
+    - name: Create versioned Zed installation directory
+      become: true
+      ansible.builtin.file:
+        path: "/opt/zed-{{ zed_version }}"
+        state: directory
+        mode: "0755"
 
-- name: Download Neovide
-  become: true
-  ansible.builtin.get_url:
-    url: "https://github.com/neovide/neovide/releases/download/{{ neovide_version }}/neovide-linux-x86_64.tar"
-    dest: "/var/tmp/neovide-{{ neovide_version }}.tar"
-    checksum: "sha256:{{ neovide_archive_sha256 }}"
-    mode: "0644"
+    - name: Install Zed
+      become: true
+      ansible.builtin.unarchive:
+        src: "/var/tmp/zed-{{ zed_version }}.tar.gz"
+        dest: "/opt/zed-{{ zed_version }}"
+        remote_src: true
+        extra_opts:
+          - --strip-components=1
+        creates: "/opt/zed-{{ zed_version }}/bin/zed"
 
-- name: Create versioned Neovide installation directory
-  become: true
-  ansible.builtin.file:
-    path: "/opt/neovide-{{ neovide_version }}"
-    state: directory
-    mode: "0755"
+    - name: Read the Zed editor runtime path
+      ansible.builtin.command:
+        argv:
+          - patchelf
+          - --print-rpath
+          - "/opt/zed-{{ zed_version }}/libexec/zed-editor"
+      register: workstation_zed_rpath
+      changed_when: false
+      failed_when: false
+      check_mode: false
 
-- name: Install Neovide
-  become: true
-  ansible.builtin.unarchive:
-    src: "/var/tmp/neovide-{{ neovide_version }}.tar"
-    dest: "/opt/neovide-{{ neovide_version }}"
-    remote_src: true
-    creates: "/opt/neovide-{{ neovide_version }}/neovide"
+    - name: Keep Zed graphics libraries vendor-neutral
+      become: true
+      ansible.builtin.command:
+        argv:
+          - patchelf
+          - --set-rpath
+          - $ORIGIN/../lib
+          - "/opt/zed-{{ zed_version }}/libexec/zed-editor"
+      changed_when: true
+      when: >-
+        workstation_zed_rpath.rc != 0 or
+        workstation_zed_rpath.stdout != '$ORIGIN/../lib'
 
-- name: Link Neovide into PATH
-  become: true
-  ansible.builtin.file:
-    src: "/opt/neovide-{{ neovide_version }}/neovide"
-    dest: /usr/local/bin/neovide
-    state: link
-    force: true
+    - name: Link Zed into PATH
+      become: true
+      ansible.builtin.file:
+        src: "/opt/zed-{{ zed_version }}/bin/zed"
+        dest: /usr/local/bin/zed
+        state: link
+        force: true
+
+    - name: Install the Zed desktop launcher
+      become: true
+      ansible.builtin.copy:
+        src: dev.zed.Zed.desktop
+        dest: /usr/local/share/applications/dev.zed.Zed.desktop
+        mode: "0644"
+      notify: Refresh desktop application database
+
+    - name: Install the Zed application icon
+      become: true
+      ansible.builtin.copy:
+        src: "/opt/zed-{{ zed_version }}/share/icons/hicolor/512x512/apps/zed.png"
+        dest: /usr/local/share/icons/hicolor/512x512/apps/zed.png
+        remote_src: true
+        mode: "0644"
+
+- name: Install Neovide graphical editor
+  when: workstation_gui_enabled | bool
+  block:
+    - name: Download Neovide
+      become: true
+      ansible.builtin.get_url:
+        url: "https://github.com/neovide/neovide/releases/download/{{ neovide_version }}/neovide-linux-x86_64.tar"
+        dest: "/var/tmp/neovide-{{ neovide_version }}.tar"
+        checksum: "sha256:{{ neovide_archive_sha256 }}"
+        mode: "0644"
+
+    - name: Create versioned Neovide installation directory
+      become: true
+      ansible.builtin.file:
+        path: "/opt/neovide-{{ neovide_version }}"
+        state: directory
+        mode: "0755"
+
+    - name: Install Neovide
+      become: true
+      ansible.builtin.unarchive:
+        src: "/var/tmp/neovide-{{ neovide_version }}.tar"
+        dest: "/opt/neovide-{{ neovide_version }}"
+        remote_src: true
+        creates: "/opt/neovide-{{ neovide_version }}/neovide"
+
+    - name: Link Neovide into PATH
+      become: true
+      ansible.builtin.file:
+        src: "/opt/neovide-{{ neovide_version }}/neovide"
+        dest: /usr/local/bin/neovide
+        state: link
+        force: true
+
+    - name: Install the Neovide desktop launcher
+      become: true
+      ansible.builtin.copy:
+        src: neovide.desktop
+        dest: /usr/local/share/applications/neovide.desktop
+        mode: "0644"
+      notify: Refresh desktop application database
+
+    - name: Install the Neovide application icon
+      become: true
+      ansible.builtin.get_url:
+        url: "https://raw.githubusercontent.com/neovide/neovide/{{ neovide_version }}/assets/neovide.svg"
+        dest: /usr/local/share/icons/hicolor/scalable/apps/neovide.svg
+        checksum: "sha256:{{ neovide_icon_sha256 }}"
+        mode: "0644"
+
+- name: Check graphical workstation Vulkan support
+  ansible.builtin.command:
+    argv:
+      - vulkaninfo
+      - --summary
+  register: workstation_vulkan
+  changed_when: false
+  failed_when: false
+  check_mode: false
+  when: workstation_gui_enabled | bool
+
+- name: Report unavailable Vulkan support
+  ansible.builtin.debug:
+    msg: >-
+      Vulkan is unavailable. Install a Vulkan-capable AMD, Intel, or NVIDIA
+      driver before launching Zed. Headless hosts should set
+      workstation_gui_enabled=false and use Zed Remote Development instead.
+  when:
+    - workstation_gui_enabled | bool
+    - workstation_vulkan.rc != 0
 
 - name: Check the versioned Tree-sitter CLI
   ansible.builtin.command:

@@ -24,9 +24,28 @@ The qmake workflow defaults to
 is not downloaded because its build options and licensing are external to this
 repository. Override it with `-e qt_qmake_path=/path/to/qmake`.
 
-Zed and Neovide are installed from pinned upstream x86_64 release archives.
-Zed uses its native SSH Remote Development support; Neovide uses the
-loopback-only helpers documented in `home/dot_local/bin/README.md`.
+Graphical workstations install Zed and Neovide from pinned upstream x86_64
+release archives and register both editors with the desktop environment. Zed
+requires a working Vulkan driver supplied by the host's AMD, Intel, or NVIDIA
+graphics stack.
+
+GUI provisioning is enabled by default. Disable it for a headless machine in
+inventory or on the command line:
+
+```yaml
+workstation_gui_enabled: false
+```
+
+```bash
+~/.local/share/dotfiles/ansible/bin/ansible-playbook \
+  -i ansible/inventory/localhost.yml ansible/workstation.yml \
+  -e workstation_gui_enabled=false
+```
+
+Headless hosts still receive Neovim, language servers, build tools, and the
+remote editor helpers. Use Zed's native SSH Remote Development support or the
+loopback-only Neovide helpers documented in `home/dot_local/bin/README.md`; the
+remote host does not need a GPU.
 
 Node.js and its bundled npm are also installed from a pinned upstream archive.
 Do not add Ubuntu's separate `npm` package: it conflicts with NodeSource and

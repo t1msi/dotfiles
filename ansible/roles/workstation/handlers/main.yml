@@ -1,0 +1,8 @@
+---
+- name: Refresh desktop application database
+  become: true
+  ansible.builtin.command:
+    argv:
+      - update-desktop-database
+      - /usr/local/share/applications
+  changed_when: true

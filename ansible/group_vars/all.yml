@@ -1,4 +1,6 @@
 ---
+workstation_gui_enabled: true
+
 neovim_version: 0.12.2
 neovim_archive_sha256: 31cf85945cb600d96cdf69f88bc68bec814acbff50863c5546adef3a1bcef260
 chezmoi_version: 2.72.2
@@ -15,6 +17,7 @@ zed_version: 1.20.2
 zed_archive_sha256: 647dc85e09fcd99cd175365a89b7b70ccf96469c4844eb8ae6eb83dfa82f7600
 neovide_version: 0.16.2
 neovide_archive_sha256: d3f4a50921b7144d6ab45096587d5f9bef3ad167f3d83e522e100b73efa73560
+neovide_icon_sha256: a6870391ded090cc5f24f0cb40a8ffa67930faf109a419753ec25ac0a03177a9
 
 qt_qmake_path: /opt/qt-everywhere-src-5.15.2/qtbase/bin/qmake
 

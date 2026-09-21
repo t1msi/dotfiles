@@ -1,0 +1,15 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Neovide
+GenericName=Text Editor
+Comment=No Nonsense Neovim Client in Rust
+TryExec=/usr/local/bin/neovide
+Exec=/usr/local/bin/neovide %F
+Icon=neovide
+Terminal=false
+StartupNotify=true
+StartupWMClass=neovide
+Categories=Utility;TextEditor;
+Keywords=Text;Editor;Neovim;
+MimeType=text/plain;text/x-makefile;text/x-c++hdr;text/x-c++src;text/x-chdr;text/x-csrc;text/x-java;text/x-shellscript;
