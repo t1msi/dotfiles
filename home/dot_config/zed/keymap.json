@@ -1,0 +1,38 @@
+[
+  {
+    "context": "Workspace",
+    "bindings": {
+      "alt-h": "workspace::ActivatePaneLeft",
+      "alt-j": "workspace::ActivatePaneDown",
+      "alt-k": "workspace::ActivatePaneUp",
+      "alt-l": "workspace::ActivatePaneRight",
+      "ctrl-`": "terminal_panel::Toggle"
+    }
+  },
+  {
+    "context": "Editor && vim_mode == normal && !menu",
+    "bindings": {
+      "ctrl-t": "workspace::NewFile",
+      "ctrl-tab": "pane::ActivateNextItem",
+      "ctrl-shift-tab": "pane::ActivatePreviousItem",
+      "ctrl-right": "pane::ActivateNextItem",
+      "ctrl-left": "pane::ActivatePreviousItem",
+      "alt-e": "project_panel::ToggleFocus",
+      "f3": "search::SelectNextMatch",
+      "shift-f3": "search::SelectPreviousMatch",
+      "f4": "editor::SwitchSourceHeader",
+      ", f": "editor::Format",
+      ", f f": "file_finder::Toggle",
+      ", f g": "pane::DeploySearch",
+      ", f b": "tab_switcher::Toggle",
+      ", f d": "diagnostics::Deploy",
+      ", b d": "pane::CloseActiveItem",
+      ", b o": ["pane::CloseOtherItems", { "close_pinned": false }],
+      ", r n": "editor::Rename",
+      ", c a": "editor::ToggleCodeActions",
+      ", t r": "task::Spawn",
+      ", t t": "task::Spawn",
+      ", t a": "task::Rerun"
+    }
+  }
+]

@@ -24,9 +24,15 @@ They can also be updated explicitly with `:TSUpdate`.
 | `<leader>ll` | Lint current buffer |
 | `<leader>tr` / `<leader>tt` | Run a task / toggle task list |
 | `<leader>tb` | Build the current qmake project |
+| `<F3>` / `<S-F3>` | Next / previous search match |
 | `<F4>` | Switch C/C++ source and header |
 | `<F5>` / `<F10>` / `<F11>` / `<F12>` | Continue / step over / step into / step out |
 | `<leader>db` | Toggle breakpoint |
+
+The leader is comma. Use `<C-w>s` for a horizontal split, `<C-w>v` for a
+vertical split, `<C-w>c` to close the current window, and `<C-w>o` to keep only
+the current window. `<A-h/j/k/l>` moves between windows from normal, insert,
+and terminal mode.
 
 The C/C++ debugger uses `lldb-dap` or `lldb-vscode`; Python uses
 `debugpy-adapter`. Tool installation belongs to the Ansible workstation role.
