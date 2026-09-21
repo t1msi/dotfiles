@@ -50,3 +50,13 @@ Project-specific configure arguments belong in `.qmake-workflow.args` or
 Project discovery also adds tasks for the dotfiles bootstrap, a venv-backed
 `main.py`, its SDK smoke test, and the diagnostics repeater and drone runs when
 their defining files are present.
+
+For remote terminal development, prepare the host with `remote-dev-workflow`
+and attach to a persistent tmux/Neovim session:
+
+```bash
+nvim-ssh devbox /home/developer/src/project project
+```
+
+For a local graphical UI backed by remote Neovim, use `neovide-remote` as
+documented in `~/.local/bin/README.md`.

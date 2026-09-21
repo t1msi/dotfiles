@@ -110,3 +110,35 @@ NEOVIDE_LOCAL_PORT=7777 NVIM_REMOTE_PORT=7777 \
 
 For a two-terminal workflow, run `nvim-remote-server /path/to/project` on the
 remote machine and create an equivalent loopback SSH tunnel manually.
+
+## Remote development
+
+Prepare a host from the dotfiles checkout using Ansible-style connection
+options. Preview first, then apply:
+
+```bash
+remote-dev-workflow check \
+  --key-file "$HOME/.ssh/device" -i 'devbox,' -u developer
+remote-dev-workflow prepare \
+  --key-file "$HOME/.ssh/device" -i 'devbox,' -u developer
+```
+
+An inventory file works as well. Limit shared inventories explicitly:
+
+```bash
+remote-dev-workflow prepare \
+  --key-file "$HOME/.ssh/device" \
+  -i inventory-prod.yml \
+  --limit devbox \
+  -u developer
+```
+
+For persistent terminal Neovim, connect through tmux:
+
+```bash
+nvim-ssh devbox /home/developer/src/project project
+```
+
+The remote checkout, compiler, language servers, task commands, and program all
+stay on the remote host. SSH identities and host aliases remain in the local
+`~/.ssh/config`.

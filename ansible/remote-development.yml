@@ -1,0 +1,62 @@
+---
+- name: Prepare an Ubuntu remote development host
+  hosts: all
+  gather_facts: true
+  vars:
+    workstation_gui_enabled: false
+    remote_development_source: "{{ ansible_env.HOME }}/.local/share/remote-development-dotfiles"
+
+  pre_tasks:
+    - name: Require Ubuntu
+      ansible.builtin.assert:
+        that:
+          - ansible_distribution == "Ubuntu"
+          - ansible_architecture == "x86_64"
+        fail_msg: This playbook currently supports x86_64 Ubuntu only.
+
+  roles:
+    - workstation
+
+  post_tasks:
+    - name: Create the remote chezmoi source directory
+      ansible.builtin.file:
+        path: "{{ remote_development_source }}"
+        state: directory
+        mode: "0700"
+
+    - name: Copy the credential-free chezmoi source
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/../home/"
+        dest: "{{ remote_development_source }}/"
+        directory_mode: "0700"
+        mode: preserve
+
+    - name: Preview remote home configuration changes
+      ansible.builtin.command:
+        argv:
+          - chezmoi
+          - --source
+          - "{{ remote_development_source }}"
+          - diff
+      register: remote_development_chezmoi_diff
+      changed_when: false
+      when: not ansible_check_mode
+
+    - name: Report remote home configuration changes
+      ansible.builtin.debug:
+        var: remote_development_chezmoi_diff.stdout_lines
+      when:
+        - not ansible_check_mode
+        - remote_development_chezmoi_diff.stdout | length > 0
+
+    - name: Apply remote home configuration
+      ansible.builtin.command:
+        argv:
+          - chezmoi
+          - --source
+          - "{{ remote_development_source }}"
+          - apply
+      changed_when: true
+      when:
+        - not ansible_check_mode
+        - remote_development_chezmoi_diff.stdout | length > 0

@@ -1,0 +1,82 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+    cat <<'EOF'
+Usage: remote-dev-workflow <check|prepare> ANSIBLE_OPTIONS
+
+Provision a headless Ubuntu development host with the repository's pinned
+workstation playbook and credential-free chezmoi configuration. An explicit
+inventory is required.
+
+Examples:
+  remote-dev-workflow check \
+    --key-file "$HOME/.ssh/device" -i 'devbox,' -u developer
+  remote-dev-workflow prepare \
+    --key-file "$HOME/.ssh/device" -i inventory-prod.yml --limit devbox -u developer
+
+Set REMOTE_DEV_DOTFILES_SOURCE if the dotfiles checkout is not at
+$HOME/src/dotfiles and the command is run outside that checkout.
+EOF
+}
+
+die() {
+    printf 'remote-dev-workflow: %s\n' "$*" >&2
+    exit 1
+}
+
+if [[ ${1:-} == help || ${1:-} == -h || ${1:-} == --help ]]; then
+    usage
+    exit 0
+fi
+if (( $# < 2 )); then
+    usage >&2
+    exit 2
+fi
+
+action=$1
+shift
+case $action in
+    check | prepare) ;;
+    *)
+        usage >&2
+        die "unknown command: $action"
+        ;;
+esac
+
+has_inventory=false
+for argument in "$@"; do
+    case $argument in
+        -i | --inventory | --inventory=*) has_inventory=true ;;
+    esac
+done
+[[ $has_inventory == true ]] || die "pass an explicit inventory with -i or --inventory"
+
+dotfiles_source=${REMOTE_DEV_DOTFILES_SOURCE:-}
+if [[ -z $dotfiles_source && -f $PWD/ansible/remote-development.yml ]]; then
+    dotfiles_source=$PWD
+fi
+if [[ -z $dotfiles_source ]]; then
+    dotfiles_source=$HOME/src/dotfiles
+fi
+playbook=$dotfiles_source/ansible/remote-development.yml
+config=$dotfiles_source/ansible/ansible.cfg
+[[ -f $playbook ]] || die "playbook not found: $playbook"
+[[ -f $config ]] || die "Ansible configuration not found: $config"
+
+ansible_playbook=$HOME/.local/share/dotfiles/ansible/bin/ansible-playbook
+if [[ ! -x $ansible_playbook ]]; then
+    ansible_playbook=$(command -v ansible-playbook || true)
+fi
+[[ -n $ansible_playbook ]] || die "ansible-playbook is not installed; run ./bootstrap locally"
+
+arguments=("$@" --extra-vars workstation_gui_enabled=false)
+if [[ $action == check ]]; then
+    arguments+=(--check)
+fi
+
+export ANSIBLE_CONFIG=${ANSIBLE_CONFIG:-$config}
+printf '+'
+printf ' %q' "$ansible_playbook" "${arguments[@]}" "$playbook"
+printf '\n'
+exec "$ansible_playbook" "${arguments[@]}" "$playbook"

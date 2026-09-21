@@ -18,6 +18,19 @@ qmake grammar or language server; clangd still handles the C/C++ source through
 
 Do not install the third-party `remote-ssh` extension for this workflow.
 
+Prepare a headless host before connecting:
+
+```bash
+remote-dev-workflow check \
+  --key-file "$HOME/.ssh/device" -i 'devbox,' -u developer
+remote-dev-workflow prepare \
+  --key-file "$HOME/.ssh/device" -i 'devbox,' -u developer
+```
+
+The destination may instead come from an inventory file; add `--limit devbox`
+when that inventory contains more than the intended development host. Confirm
+that `ssh devbox` works, then connect through the Remote Projects dialog.
+
 ## Key bindings
 
 `keymap.json` mirrors the Neovim comma-led workflow in Vim normal mode:
