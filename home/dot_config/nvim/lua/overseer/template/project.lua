@@ -42,6 +42,11 @@ return {
       if file_exists(root .. "/tests/tst_python_sdk.py") then
         table.insert(tasks, task("python: SDK smoke test", { python, "./tests/tst_python_sdk.py" }, root, overseer.TAG.TEST))
       end
+      table.insert(tasks, task("python: syntax check", {
+        python,
+        "-c",
+        "import ast, pathlib; files=[pathlib.Path('main.py'), *pathlib.Path('src').rglob('*.py'), *pathlib.Path('tests').rglob('*.py'), *pathlib.Path('examples').rglob('*.py')]; [ast.parse(p.read_text(encoding='utf-8'), filename=str(p)) for p in files]; print(f'syntax ok: {len(files)} files')",
+      }, root, overseer.TAG.TEST))
     end
 
     local repeater_config = "./configs/aeroscout/repeater/config.yaml"
