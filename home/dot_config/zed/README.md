@@ -21,10 +21,11 @@ Do not install the third-party `remote-ssh` extension for this workflow.
 Prepare a headless host before connecting:
 
 ```bash
+export REMOTE_DEV_KEY_FILE="$HOME/.ssh/device" # ~/.bashrc.local
 remote-dev-workflow check \
-  --key-file "$HOME/.ssh/device" -i 'devbox,' -u developer
+  -i 'devbox,' -u developer
 remote-dev-workflow prepare \
-  --key-file "$HOME/.ssh/device" -i 'devbox,' -u developer
+  -i 'devbox,' -u developer
 ```
 
 The destination may instead come from an inventory file; add `--limit devbox`

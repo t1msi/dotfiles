@@ -114,20 +114,20 @@ remote machine and create an equivalent loopback SSH tunnel manually.
 ## Remote development
 
 Prepare a host from the dotfiles checkout using Ansible-style connection
-options. Preview first, then apply:
+options. Configure the machine-local key path once, then preview and apply:
 
 ```bash
+export REMOTE_DEV_KEY_FILE="$HOME/.ssh/device" # ~/.bashrc.local
 remote-dev-workflow check \
-  --key-file "$HOME/.ssh/device" -i 'devbox,' -u developer
+  -i 'devbox,' -u developer
 remote-dev-workflow prepare \
-  --key-file "$HOME/.ssh/device" -i 'devbox,' -u developer
+  -i 'devbox,' -u developer
 ```
 
 An inventory file works as well. Limit shared inventories explicitly:
 
 ```bash
 remote-dev-workflow prepare \
-  --key-file "$HOME/.ssh/device" \
   -i inventory-prod.yml \
   --limit devbox \
   -u developer

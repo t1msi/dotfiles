@@ -10,13 +10,16 @@ workstation playbook and credential-free chezmoi configuration. An explicit
 inventory is required.
 
 Examples:
+  export REMOTE_DEV_KEY_FILE="$HOME/.ssh/device"
   remote-dev-workflow check \
-    --key-file "$HOME/.ssh/device" -i 'devbox,' -u developer
+    -i 'devbox,' -u developer
   remote-dev-workflow prepare \
-    --key-file "$HOME/.ssh/device" -i inventory-prod.yml --limit devbox -u developer
+    -i inventory-prod.yml --limit devbox -u developer
 
 Set REMOTE_DEV_DOTFILES_SOURCE if the dotfiles checkout is not at
 $HOME/src/dotfiles and the command is run outside that checkout.
+Set REMOTE_DEV_KEY_FILE to a machine-local default for --key-file. An explicit
+--key-file or --private-key option takes precedence.
 EOF
 }
 
@@ -45,9 +48,11 @@ case $action in
 esac
 
 has_inventory=false
+has_key_file=false
 for argument in "$@"; do
     case $argument in
         -i | --inventory | --inventory=*) has_inventory=true ;;
+        --key-file | --key-file=* | --private-key | --private-key=*) has_key_file=true ;;
     esac
 done
 [[ $has_inventory == true ]] || die "pass an explicit inventory with -i or --inventory"
@@ -70,7 +75,12 @@ if [[ ! -x $ansible_playbook ]]; then
 fi
 [[ -n $ansible_playbook ]] || die "ansible-playbook is not installed; run ./bootstrap locally"
 
-arguments=("$@" --extra-vars workstation_gui_enabled=false)
+arguments=("$@")
+if [[ $has_key_file == false && -n ${REMOTE_DEV_KEY_FILE:-} ]]; then
+    [[ -r $REMOTE_DEV_KEY_FILE ]] || die "key file is not readable: $REMOTE_DEV_KEY_FILE"
+    arguments=(--key-file "$REMOTE_DEV_KEY_FILE" "${arguments[@]}")
+fi
+arguments+=(--extra-vars workstation_gui_enabled=false)
 if [[ $action == check ]]; then
     arguments+=(--check)
 fi

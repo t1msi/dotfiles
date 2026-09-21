@@ -63,16 +63,20 @@ ssh-copy-id -i "$HOME/.ssh/device.pub" developer@device-address
 ```
 
 Add a machine-local `Host devbox` entry to `~/.ssh/config` and verify it with
-`ssh devbox`. Then provision it:
+`ssh devbox`. Keep the key path in the untracked `~/.bashrc.local`:
+
+```bash
+export REMOTE_DEV_KEY_FILE="$HOME/.ssh/device"
+```
+
+Start a new terminal or source `~/.bashrc`, then provision the host:
 
 ```bash
 remote-dev-workflow check \
-  --key-file "$HOME/.ssh/device" \
   -i 'devbox,' \
   -u developer
 
 remote-dev-workflow prepare \
-  --key-file "$HOME/.ssh/device" \
   -i inventory-prod.yml \
   --limit devbox \
   -u developer
