@@ -20,6 +20,9 @@ Typical use:
 ```bash
 qmake-workflow configure
 qmake-workflow build
+qmake-workflow clean
+qmake-workflow clear
+qmake-workflow rebuild
 qmake-workflow compdb
 qmake-workflow lint
 qmake-workflow run
@@ -42,11 +45,38 @@ to `configure` and arbitrary make options or targets to `build` and `compdb`.
 
 Environment variables listed by `qmake-workflow --help` override every default.
 For a persistent machine-local override, export them from `~/.bashrc.local`.
+For project-local qmake options, put one argument per line in
+`.qmake-workflow.args`; these arguments are applied to every configure,
+including the configure phase of `rebuild`.
+
+`clean` runs the generated Make target and preserves qmake configuration.
+`clear` deletes the shadow build directory. `rebuild` clears it, reruns qmake,
+and performs a complete build. Clear operations refuse the source directory and
+unmarked external directories.
 
 QtCreator should use its own shadow directory, the same three qmake arguments,
 `<buildDir>/staging/Course` as the executable, and `<buildDir>/staging` as the
 working directory. Keep QtCreator `.user` files and generated compilation
 databases out of Git.
+
+## cmake-workflow
+
+`cmake-workflow` provides equivalent editor-independent operations for CMake
+projects. It discovers the nearest `CMakeLists.txt`, defaults to an out-of-source
+`build` directory, and enables `compile_commands.json`:
+
+```bash
+cmake-workflow configure
+cmake-workflow build
+cmake-workflow clean
+cmake-workflow clear
+cmake-workflow rebuild
+```
+
+`CMAKE_BUILD_DIR`, `CMAKE_BUILD_TYPE`, `CMAKE_GENERATOR`, and `CMAKE_JOBS`
+override the defaults. Project-specific configure options belong in
+`.cmake-workflow.args`, one argument per line. As with qmake, `clean` preserves
+the configured build tree while `clear` removes it and `rebuild` recreates it.
 
 ## Remote Neovide
 

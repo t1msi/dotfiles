@@ -32,7 +32,8 @@
       ", c a": "editor::ToggleCodeActions",
       ", t r": "task::Spawn",
       ", t t": "task::Spawn",
-      ", t a": "task::Rerun"
+      ", t a": "task::Rerun",
+      ", t b": "task::Spawn"
     }
   }
 ]

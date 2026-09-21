@@ -23,7 +23,7 @@ They can also be updated explicitly with `:TSUpdate`.
 | `<leader>f` | Format buffer or selection |
 | `<leader>ll` | Lint current buffer |
 | `<leader>tr` / `<leader>tt` | Run a task / toggle task list |
-| `<leader>tb` | Build the current qmake project |
+| `<leader>tb` | Build the current qmake or CMake project |
 | `<F3>` / `<S-F3>` | Next / previous search match |
 | `<F4>` | Switch C/C++ source and header |
 | `<F5>` / `<F10>` / `<F11>` / `<F12>` | Continue / step over / step into / step out |
@@ -40,3 +40,9 @@ Qmake tasks call the editor-independent `qmake-workflow` command. Rust, Lua,
 CMake, QML, and Pkl use their provisioned language servers; `.pro`, `.pri`, and
 `.prf` files use the Make parser because qmake has no maintained Tree-sitter
 grammar or language server.
+
+The task picker includes configure, build, clean, clear, and rebuild operations
+for qmake and CMake. `clean` preserves configuration; `clear` deletes the build
+directory; `rebuild` clears, configures, and builds. Project-specific configure
+arguments belong in `.qmake-workflow.args` or `.cmake-workflow.args`, one per
+line.

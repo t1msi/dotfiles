@@ -27,7 +27,7 @@ Do not install the third-party `remote-ssh` extension for this workflow.
 | `,ff` / `,fg` / `,fb` / `,fd` | Find files / text / buffers / diagnostics |
 | `,bd` / `,bo` | Close the current buffer / other buffers |
 | `,f` | Format the current buffer |
-| `,tr` / `,tt` / `,ta` | Pick a task / pick a task / rerun the last task |
+| `,tr` / `,tt` / `,tb` / `,ta` | Pick a task / pick a task / pick a build / rerun |
 | `<A-h/j/k/l>` | Move between panes |
 | `<F3>` / `<S-F3>` | Next / previous search match |
 | `<F4>` | Switch C/C++ source and header |
@@ -35,3 +35,8 @@ Do not install the third-party `remote-ssh` extension for this workflow.
 Space keeps its normal Vim motion. Use comma, as in Neovim, for custom
 sequences. Vim's built-in `<C-w>s` and `<C-w>v` create horizontal and vertical
 splits; `<C-w>c` closes the current pane and `<C-w>o` keeps only that pane.
+
+The task picker includes qmake and CMake configure, build, clean, clear, and
+rebuild operations. `clean` preserves the configured tree; `clear` removes it;
+`rebuild` clears, configures, and builds. Fixed project configure options belong
+in `.qmake-workflow.args` or `.cmake-workflow.args`, one argument per line.

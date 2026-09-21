@@ -8,13 +8,13 @@ overseer.setup({
   },
 })
 
-local function register_qmake_task(name, command, tag)
+local function register_task(workflow, name, command, tag)
   overseer.register_template({
-    name = "qmake: " .. name,
+    name = workflow .. ": " .. name,
     tags = { tag },
     builder = function()
       return {
-        cmd = { "qmake-workflow", command },
+        cmd = { workflow .. "-workflow", command },
         components = {
           { "on_output_quickfix", open = false },
           "default",
@@ -24,15 +24,33 @@ local function register_qmake_task(name, command, tag)
   })
 end
 
-register_qmake_task("configure", "configure", overseer.TAG.BUILD)
-register_qmake_task("build", "build", overseer.TAG.BUILD)
-register_qmake_task("compile database", "compdb", overseer.TAG.BUILD)
-register_qmake_task("lint", "lint", overseer.TAG.TEST)
-register_qmake_task("run", "run", overseer.TAG.RUN)
+register_task("qmake", "configure", "configure", overseer.TAG.BUILD)
+register_task("qmake", "build", "build", overseer.TAG.BUILD)
+register_task("qmake", "clean", "clean", overseer.TAG.BUILD)
+register_task("qmake", "clear", "clear", overseer.TAG.BUILD)
+register_task("qmake", "rebuild", "rebuild", overseer.TAG.BUILD)
+register_task("qmake", "compile database", "compdb", overseer.TAG.BUILD)
+register_task("qmake", "lint", "lint", overseer.TAG.TEST)
+register_task("qmake", "run", "run", overseer.TAG.RUN)
+
+register_task("cmake", "configure", "configure", overseer.TAG.BUILD)
+register_task("cmake", "build", "build", overseer.TAG.BUILD)
+register_task("cmake", "clean", "clean", overseer.TAG.BUILD)
+register_task("cmake", "clear", "clear", overseer.TAG.BUILD)
+register_task("cmake", "rebuild", "rebuild", overseer.TAG.BUILD)
 
 vim.keymap.set("n", "<leader>tr", "<cmd>OverseerRun<cr>", { desc = "Run task" })
 vim.keymap.set("n", "<leader>tt", "<cmd>OverseerToggle<cr>", { desc = "Toggle task list" })
 vim.keymap.set("n", "<leader>ta", "<cmd>OverseerTaskAction<cr>", { desc = "Task action" })
 vim.keymap.set("n", "<leader>tb", function()
-  overseer.run_task({ name = "qmake: build" })
-end, { desc = "Build qmake project" })
+  local workflow
+  if vim.system({ "qmake-workflow", "show" }, { text = true }):wait().code == 0 then
+    workflow = "qmake"
+  elseif vim.system({ "cmake-workflow", "show" }, { text = true }):wait().code == 0 then
+    workflow = "cmake"
+  else
+    vim.notify("No qmake or CMake project found", vim.log.levels.ERROR)
+    return
+  end
+  overseer.run_task({ name = workflow .. ": build" })
+end, { desc = "Build current project" })
