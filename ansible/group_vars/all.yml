@@ -1,5 +1,11 @@
 ---
 workstation_gui_enabled: true
+workstation_system_packages_enabled: true
+workstation_apt_update_cache: true
+workstation_online_installers_enabled: true
+workstation_assets_from_controller: false
+workstation_asset_cache_directory: >-
+  {{ lookup('env', 'HOME') }}/.cache/dotfiles/workstation-assets
 
 neovim_version: 0.12.2
 chezmoi_version: 2.72.2

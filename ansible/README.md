@@ -48,9 +48,12 @@ loopback-only Neovide helpers documented in `home/dot_local/bin/README.md`; the
 remote host does not need a GPU.
 
 The headless remote playbook also supports 64-bit Raspberry Pi OS/Debian 12 on
-`aarch64`. It installs architecture-specific Neovim, chezmoi, Node.js, Rust,
-NeoCMakeLSP, LuaLS, qmlls, Java, and Pkl builds. Zed remains on the local
-workstation and connects through native Remote Development.
+`aarch64`. It downloads pinned architecture-specific release assets on the
+controller, verifies their checksums, and copies them to the host over SSH. The
+default remote policy does not refresh APT metadata, install system packages,
+upgrade system packages, or run network-dependent Rust, npm, and pip installers.
+Zed remains on the local workstation and connects through native Remote
+Development.
 
 For a remote host, first make sure its non-root development user has Python 3,
 SSH access, and sudo. Then use the dedicated wrapper with the same inventory and
@@ -114,6 +117,31 @@ copies only the tracked `home/` chezmoi source, previews its changes, and applie
 it. Always use `--limit` when a shared production inventory contains hosts that
 must not become development machines. The key, inventory, SSH aliases, and
 passwords remain outside this repository.
+
+Remote provisioning is conservative by default. If a host has working package
+repositories and may receive missing packages, opt in explicitly. APT still uses
+`state: present`; the role never performs a distribution upgrade:
+
+```bash
+remote-dev-workflow prepare \
+  -e workstation_system_packages_enabled=true \
+  -e workstation_apt_update_cache=false
+```
+
+Set `workstation_apt_update_cache=true` only when refreshing package metadata is
+also acceptable. Online Rust toolchains, the Cargo-built Tree-sitter CLI, npm
+language servers, and pip tools require a separate opt-in and outbound network
+access from the target:
+
+```bash
+remote-dev-workflow prepare \
+  -e workstation_online_installers_enabled=true
+```
+
+The controller cache defaults to
+`~/.cache/dotfiles/workstation-assets/<architecture>/`. Override
+`workstation_asset_cache_directory` when the controller should use a shared or
+pre-populated cache.
 
 The project-specific Qt 5.15 SDK is not installed on ARM. If an ARM Qt SDK is
 available separately, set `QMAKE_BIN` in the remote user's `.bashrc.local`.

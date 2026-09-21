@@ -4,6 +4,10 @@
   gather_facts: true
   vars:
     workstation_gui_enabled: false
+    workstation_system_packages_enabled: false
+    workstation_apt_update_cache: false
+    workstation_online_installers_enabled: false
+    workstation_assets_from_controller: true
     remote_development_source: "{{ ansible_env.HOME }}/.local/share/remote-development-dotfiles"
 
   roles:

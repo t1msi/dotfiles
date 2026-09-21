@@ -40,6 +40,91 @@
     workstation_java_asset: >-
       OpenJDK{{ workstation_java_major }}U-jre_{{ workstation_architecture_assets.java_arch }}_linux_hotspot_{{ java_runtime_version }}.tar.gz
     workstation_pkl_asset: "pkl-linux-{{ workstation_architecture_assets.pkl_arch }}"
+    workstation_pkl_lsp_asset: "pkl-lsp-{{ pkl_lsp_version }}.jar"
+
+- name: Describe pinned standalone workstation assets
+  ansible.builtin.set_fact:
+    workstation_standalone_assets:
+      - name: Neovim
+        filename: "{{ workstation_neovim_asset }}"
+        url: >-
+          https://github.com/neovim/neovim/releases/download/v{{ neovim_version }}/{{ workstation_neovim_asset }}
+        dest: "/var/tmp/nvim-{{ neovim_version }}.tar.gz"
+        checksum: "{{ workstation_architecture_assets.neovim_sha256 }}"
+        mode: "0644"
+      - name: chezmoi
+        filename: "{{ workstation_chezmoi_asset }}"
+        url: >-
+          https://github.com/twpayne/chezmoi/releases/download/v{{ chezmoi_version }}/{{ workstation_chezmoi_asset }}
+        dest: "/var/tmp/{{ workstation_chezmoi_asset }}"
+        checksum: "{{ workstation_architecture_assets.chezmoi_sha256 }}"
+        mode: "0644"
+      - name: Node.js
+        filename: "{{ workstation_nodejs_asset }}"
+        url: "https://nodejs.org/dist/v{{ nodejs_version }}/{{ workstation_nodejs_asset }}"
+        dest: "/var/tmp/{{ workstation_nodejs_asset }}"
+        checksum: "{{ workstation_architecture_assets.nodejs_sha256 }}"
+        mode: "0644"
+      - name: rustup-init
+        filename: "rustup-init-{{ rustup_version }}-{{ workstation_architecture_assets.rust_target }}"
+        url: >-
+          https://static.rust-lang.org/rustup/archive/{{ rustup_version }}/{{ workstation_architecture_assets.rust_target }}/rustup-init
+        dest: "/var/tmp/rustup-init-{{ rustup_version }}"
+        checksum: "{{ workstation_architecture_assets.rustup_sha256 }}"
+        mode: "0755"
+        enabled: "{{ workstation_online_installers_enabled }}"
+      - name: neocmakelsp
+        filename: "{{ workstation_neocmakelsp_asset }}"
+        url: >-
+          https://github.com/neocmakelsp/neocmakelsp/releases/download/v{{ neocmakelsp_version }}/{{ workstation_neocmakelsp_asset }}
+        dest: "/var/tmp/neocmakelsp-{{ neocmakelsp_version }}.tar.gz"
+        checksum: "{{ workstation_architecture_assets.neocmakelsp_sha256 }}"
+        mode: "0644"
+      - name: Lua language server
+        filename: "{{ workstation_lua_ls_asset }}"
+        url: >-
+          https://github.com/LuaLS/lua-language-server/releases/download/{{ lua_language_server_version }}/{{ workstation_lua_ls_asset }}
+        dest: "/var/tmp/lua-language-server-{{ lua_language_server_version }}.tar.gz"
+        checksum: "{{ workstation_architecture_assets.lua_ls_sha256 }}"
+        mode: "0644"
+      - name: QML language server
+        filename: "{{ workstation_qmlls_asset }}"
+        url: >-
+          https://github.com/TheQtCompanyRnD/qmlls-workflow/releases/download/{{ qmlls_version }}/{{ workstation_qmlls_asset }}
+        dest: "/var/tmp/qmlls-{{ qmlls_version }}.zip"
+        checksum: "{{ workstation_architecture_assets.qmlls_sha256 }}"
+        mode: "0644"
+      - name: Java runtime
+        filename: "{{ workstation_java_asset }}"
+        url: >-
+          https://github.com/adoptium/{{ workstation_java_repository }}/releases/download/{{ workstation_java_release_tag }}/{{ workstation_java_asset }}
+        dest: "/var/tmp/temurin-jre-{{ java_runtime_version }}.tar.gz"
+        checksum: "{{ workstation_architecture_assets.java_sha256 }}"
+        mode: "0644"
+      - name: Pkl
+        filename: "{{ workstation_pkl_asset }}"
+        url: >-
+          https://github.com/apple/pkl/releases/download/{{ pkl_version }}/{{ workstation_pkl_asset }}
+        dest: "/var/tmp/{{ workstation_pkl_asset }}"
+        checksum: "{{ workstation_architecture_assets.pkl_sha256 }}"
+        mode: "0755"
+      - name: Pkl language server
+        filename: "{{ workstation_pkl_lsp_asset }}"
+        url: >-
+          https://github.com/apple/pkl-lsp/releases/download/{{ pkl_lsp_version }}/{{ workstation_pkl_lsp_asset }}
+        dest: "/var/tmp/{{ workstation_pkl_lsp_asset }}"
+        checksum: "{{ pkl_lsp_jar_sha256 }}"
+        mode: "0644"
+
+- name: Stage pinned standalone workstation assets
+  ansible.builtin.include_tasks: stage_asset.yml
+  loop: "{{ workstation_standalone_assets }}"
+  loop_control:
+    loop_var: workstation_asset
+    label: "{{ workstation_asset.name }}"
+  when:
+    - workstation_assets_from_controller | bool
+    - workstation_asset.enabled | default(true) | bool
 
 - name: Install workstation packages
   become: true
@@ -74,8 +159,9 @@
       - xvfb
       - xz-utils
     state: present
-    update_cache: true
+    update_cache: "{{ workstation_apt_update_cache | bool }}"
     cache_valid_time: 3600
+  when: workstation_system_packages_enabled | bool
 
 - name: Install graphical workstation packages
   become: true
@@ -86,7 +172,9 @@
       - vulkan-tools
       - xclip
     state: present
-  when: workstation_gui_enabled | bool
+  when:
+    - workstation_gui_enabled | bool
+    - workstation_system_packages_enabled | bool
 
 - name: Download Neovim
   become: true
@@ -96,6 +184,7 @@
     dest: "/var/tmp/nvim-{{ neovim_version }}.tar.gz"
     checksum: "sha256:{{ workstation_architecture_assets.neovim_sha256 }}"
     mode: "0644"
+  when: not (workstation_assets_from_controller | bool)
 
 - name: Create versioned Neovim installation directory
   become: true
@@ -130,6 +219,7 @@
     dest: "/var/tmp/{{ workstation_chezmoi_asset }}"
     checksum: "sha256:{{ workstation_architecture_assets.chezmoi_sha256 }}"
     mode: "0644"
+  when: not (workstation_assets_from_controller | bool)
 
 - name: Create versioned chezmoi installation directory
   become: true
@@ -167,6 +257,7 @@
     dest: "/var/tmp/{{ workstation_nodejs_asset }}"
     checksum: "sha256:{{ workstation_architecture_assets.nodejs_sha256 }}"
     mode: "0644"
+  when: not (workstation_assets_from_controller | bool)
 
 - name: Create versioned Node.js installation directory
   become: true
@@ -372,6 +463,7 @@
   changed_when: false
   failed_when: false
   check_mode: false
+  when: workstation_online_installers_enabled | bool
 
 - name: Download rustup-init
   become: true
@@ -381,11 +473,17 @@
     dest: "/var/tmp/rustup-init-{{ rustup_version }}"
     checksum: "sha256:{{ workstation_architecture_assets.rustup_sha256 }}"
     mode: "0755"
+  when:
+    - workstation_online_installers_enabled | bool
+    - not (workstation_assets_from_controller | bool)
 
 - name: Build a host-compatible Tree-sitter CLI
-  when: >-
-    workstation_tree_sitter_cli.rc != 0 or
-    ('tree-sitter ' ~ tree_sitter_cli_version) not in workstation_tree_sitter_cli.stdout
+  when:
+    - workstation_online_installers_enabled | bool
+    - >-
+      (workstation_tree_sitter_cli.rc | default(1)) != 0 or
+      ('tree-sitter ' ~ tree_sitter_cli_version) not in
+      (workstation_tree_sitter_cli.stdout | default(''))
   block:
     - name: Remove an unusable Tree-sitter CLI installation
       become: true
@@ -447,12 +545,14 @@
   environment:
     CARGO_HOME: "{{ ansible_env.HOME }}/.cargo"
     RUSTUP_HOME: "{{ ansible_env.HOME }}/.rustup"
+  when: workstation_online_installers_enabled | bool
 
 - name: Check the Rust analyzer component
   ansible.builtin.stat:
     path: >-
       {{ ansible_env.HOME }}/.rustup/toolchains/{{ rust_toolchain_version }}-{{ workstation_architecture_assets.rust_target }}/bin/rust-analyzer
   register: workstation_rust_analyzer
+  when: workstation_online_installers_enabled | bool
 
 - name: Install the Rust analyzer component
   ansible.builtin.command:
@@ -467,7 +567,9 @@
     CARGO_HOME: "{{ ansible_env.HOME }}/.cargo"
     RUSTUP_HOME: "{{ ansible_env.HOME }}/.rustup"
   changed_when: true
-  when: not workstation_rust_analyzer.stat.exists
+  when:
+    - workstation_online_installers_enabled | bool
+    - not (workstation_rust_analyzer.stat.exists | default(false))
 
 - name: Link Rust developer tools into PATH
   become: true
@@ -484,6 +586,7 @@
     - rust-analyzer
     - rustc
     - rustfmt
+  when: workstation_online_installers_enabled | bool
 
 - name: Link Tree-sitter CLI into PATH
   become: true
@@ -492,6 +595,7 @@
     dest: /usr/local/bin/tree-sitter
     state: link
     force: true
+  when: workstation_online_installers_enabled | bool
 
 - name: Download neocmakelsp
   become: true
@@ -501,6 +605,7 @@
     dest: "/var/tmp/neocmakelsp-{{ neocmakelsp_version }}.tar.gz"
     checksum: "sha256:{{ workstation_architecture_assets.neocmakelsp_sha256 }}"
     mode: "0644"
+  when: not (workstation_assets_from_controller | bool)
 
 - name: Create versioned neocmakelsp installation directory
   become: true
@@ -533,6 +638,7 @@
     dest: "/var/tmp/lua-language-server-{{ lua_language_server_version }}.tar.gz"
     checksum: "sha256:{{ workstation_architecture_assets.lua_ls_sha256 }}"
     mode: "0644"
+  when: not (workstation_assets_from_controller | bool)
 
 - name: Create the Lua language server directory
   become: true
@@ -565,6 +671,7 @@
     dest: "/var/tmp/qmlls-{{ qmlls_version }}.zip"
     checksum: "sha256:{{ workstation_architecture_assets.qmlls_sha256 }}"
     mode: "0644"
+  when: not (workstation_assets_from_controller | bool)
 
 - name: Create the QML language server directory
   become: true
@@ -597,6 +704,7 @@
     dest: "/var/tmp/temurin-jre-{{ java_runtime_version }}.tar.gz"
     checksum: "sha256:{{ workstation_architecture_assets.java_sha256 }}"
     mode: "0644"
+  when: not (workstation_assets_from_controller | bool)
 
 - name: Create the Java runtime directory
   become: true
@@ -638,6 +746,16 @@
     dest: "/opt/pkl-{{ pkl_version }}/pkl"
     checksum: "sha256:{{ workstation_architecture_assets.pkl_sha256 }}"
     mode: "0755"
+  when: not (workstation_assets_from_controller | bool)
+
+- name: Install controller-cached Pkl
+  become: true
+  ansible.builtin.copy:
+    src: "/var/tmp/{{ workstation_pkl_asset }}"
+    dest: "/opt/pkl-{{ pkl_version }}/pkl"
+    remote_src: true
+    mode: "0755"
+  when: workstation_assets_from_controller | bool
 
 - name: Link Pkl into PATH
   become: true
@@ -662,6 +780,16 @@
     dest: "/opt/pkl-lsp-{{ pkl_lsp_version }}/pkl-lsp.jar"
     checksum: "sha256:{{ pkl_lsp_jar_sha256 }}"
     mode: "0644"
+  when: not (workstation_assets_from_controller | bool)
+
+- name: Install controller-cached Pkl language server
+  become: true
+  ansible.builtin.copy:
+    src: "/var/tmp/{{ workstation_pkl_lsp_asset }}"
+    dest: "/opt/pkl-lsp-{{ pkl_lsp_version }}/pkl-lsp.jar"
+    remote_src: true
+    mode: "0644"
+  when: workstation_assets_from_controller | bool
 
 - name: Install the Pkl language server launcher
   become: true
@@ -684,6 +812,7 @@
     NPM_CONFIG_PREFIX: /usr/local
     PATH: /usr/local/bin:/usr/bin:/bin
   loop: "{{ npm_language_servers }}"
+  when: workstation_online_installers_enabled | bool
 
 - name: Install pinned Python developer tools for the workstation user
   ansible.builtin.pip:
@@ -691,6 +820,7 @@
     virtualenv: "{{ ansible_env.HOME }}/.local/share/dotfiles/python-tools"
     virtualenv_command: /usr/bin/python3 -m venv
     state: present
+  when: workstation_online_installers_enabled | bool
 
 - name: Remove legacy user-level Python tool launchers
   ansible.builtin.file:
@@ -702,6 +832,7 @@
     - debugpy
     - debugpy-adapter
     - ruff
+  when: workstation_online_installers_enabled | bool
 
 - name: Link Python developer tools into PATH
   become: true
@@ -716,6 +847,7 @@
     - debugpy
     - debugpy-adapter
     - ruff
+  when: workstation_online_installers_enabled | bool
 
 - name: Check the configured Qt qmake
   ansible.builtin.stat:

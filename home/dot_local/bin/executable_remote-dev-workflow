@@ -25,6 +25,9 @@ $HOME/src/dotfiles and the command is run outside that checkout.
 Set REMOTE_DEV_KEY_FILE to a machine-local default for --key-file. An explicit
 --key-file or --private-key option takes precedence.
 REMOTE_DEV_HOST and REMOTE_DEV_USER provide defaults for -i and -u.
+Remote defaults stage pinned assets through the controller and disable APT and
+network-dependent package installers. Override their Ansible variables only for
+hosts where package changes and outbound network access are acceptable.
 EOF
 }
 

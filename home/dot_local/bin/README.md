@@ -175,3 +175,8 @@ export REMOTE_DEV_HOST="192.168.1.50"
 export REMOTE_DEV_USER="pi"
 remote-dev-workflow prepare
 ```
+
+Remote preparation downloads and verifies pinned standalone tools on the local
+controller, then copies them over SSH. It does not use APT or run remote Rust,
+npm, or pip downloads unless their policy variables are explicitly enabled; see
+`ansible/README.md` for the opt-in commands.
