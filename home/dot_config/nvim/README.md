@@ -24,6 +24,7 @@ They can also be updated explicitly with `:TSUpdate`.
 | `<leader>ll` | Lint current buffer |
 | `<leader>tr` / `<leader>tt` | Run a task / toggle task list |
 | `<leader>tb` | Build the current qmake or CMake project |
+| `<C-t>` | Open a new tab page |
 | `<F3>` / `<S-F3>` | Next / previous search match |
 | `<F4>` | Switch C/C++ source and header |
 | `<F5>` / `<F10>` / `<F11>` / `<F12>` | Continue / step over / step into / step out |
@@ -46,6 +47,9 @@ for qmake and CMake, plus CMake tests. `clean` preserves configuration; `clear`
 deletes the build directory; `rebuild` clears, configures, and builds.
 Project-specific configure arguments belong in `.qmake-workflow.args` or
 `.cmake-workflow.args`, one per line.
+
+Qmake tasks include stock unit tests, the UGCS test list, and the targeted
+`HealthCheckExecutorTest`. Use the terminal workflow for another exact class.
 
 Project discovery also adds tasks for the dotfiles bootstrap, a venv-backed
 `main.py`, its SDK smoke and syntax checks, and the diagnostics repeater and

@@ -8,13 +8,15 @@ overseer.setup({
   },
 })
 
-local function register_task(workflow, name, command, tag)
+local function register_task(workflow, name, command, tag, arguments)
   overseer.register_template({
     name = workflow .. ": " .. name,
     tags = { tag },
     builder = function()
+      local cmd = { workflow .. "-workflow", command }
+      vim.list_extend(cmd, arguments or {})
       return {
-        cmd = { workflow .. "-workflow", command },
+        cmd = cmd,
         components = {
           { "on_output_quickfix", open = false },
           "default",
@@ -31,6 +33,9 @@ register_task("qmake", "clear", "clear", overseer.TAG.BUILD)
 register_task("qmake", "rebuild", "rebuild", overseer.TAG.BUILD)
 register_task("qmake", "compile database", "compdb", overseer.TAG.BUILD)
 register_task("qmake", "lint", "lint", overseer.TAG.TEST)
+register_task("qmake", "unit tests", "test", overseer.TAG.TEST, { "unit" })
+register_task("qmake", "UGCS test list", "test", overseer.TAG.TEST, { "ugcs", "list" })
+register_task("qmake", "UGCS HealthCheckExecutorTest", "test", overseer.TAG.TEST, { "ugcs", "HealthCheckExecutorTest" })
 register_task("qmake", "run", "run", overseer.TAG.RUN)
 
 register_task("cmake", "configure", "configure", overseer.TAG.BUILD)

@@ -42,6 +42,7 @@ that `ssh devbox` works, then connect through the Remote Projects dialog.
 | `,bd` / `,bo` | Close the current buffer / other buffers |
 | `,f` | Format the current buffer |
 | `,tr` / `,tt` / `,tb` / `,ta` | Pick a task / pick a task / pick a build / rerun |
+| `<C-t>` | Open a new untitled editor tab |
 | `<A-h/j/k/l>` | Move between panes |
 | `<F3>` / `<S-F3>` | Next / previous search match |
 | `<F4>` | Switch C/C++ source and header |
@@ -55,3 +56,7 @@ rebuild operations, plus CMake tests. `clean` preserves the configured tree;
 `clear` removes it; `rebuild` clears, configures, and builds. Fixed project
 configure options belong in `.qmake-workflow.args` or `.cmake-workflow.args`,
 one argument per line.
+
+Qmake projects also expose stock unit tests, the UGCS test list, and the
+targeted `HealthCheckExecutorTest`. The underlying CLI supports other exact
+classes with `qmake-workflow test unit NAME` or `qmake-workflow test ugcs NAME`.

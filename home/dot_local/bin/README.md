@@ -25,6 +25,9 @@ qmake-workflow clear
 qmake-workflow rebuild
 qmake-workflow compdb
 qmake-workflow lint
+qmake-workflow test unit
+qmake-workflow test ugcs list
+qmake-workflow test ugcs HealthCheckExecutorTest
 qmake-workflow run
 qmake-workflow debug --some-application-argument
 ```
@@ -58,6 +61,26 @@ QtCreator should use its own shadow directory, the same three qmake arguments,
 `<buildDir>/staging/Course` as the executable, and `<buildDir>/staging` as the
 working directory. Keep QtCreator `.user` files and generated compilation
 databases out of Git.
+
+QGC has two test registries in the staged Debug application. Stock QGC tests
+run under Xvfb and accept an optional exact class name:
+
+```bash
+qmake-workflow test unit
+qmake-workflow test unit SomeTestClass
+```
+
+UGCS tests use the singular application option `--ugcs-test`. List names before
+running a targeted class:
+
+```bash
+qmake-workflow test ugcs list
+qmake-workflow test ugcs HealthCheckExecutorTest
+```
+
+`qmake-workflow test ugcs all` is explicit because the full custom suite
+contains `VideoReopenTest`, which can hang. All application tests require an
+already-built Debug `Course` binary.
 
 ## cmake-workflow
 

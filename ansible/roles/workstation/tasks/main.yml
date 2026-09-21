@@ -29,6 +29,7 @@
       - tmux
       - trash-cli
       - unzip
+      - xvfb
       - xz-utils
     state: present
     update_cache: true
@@ -42,7 +43,6 @@
       - patchelf
       - vulkan-tools
       - xclip
-      - xvfb
     state: present
   when: workstation_gui_enabled | bool
 
