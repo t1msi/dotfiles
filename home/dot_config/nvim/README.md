@@ -30,4 +30,7 @@ They can also be updated explicitly with `:TSUpdate`.
 
 The C/C++ debugger uses `lldb-dap` or `lldb-vscode`; Python uses
 `debugpy-adapter`. Tool installation belongs to the Ansible workstation role.
-Qmake tasks call the editor-independent `qmake-workflow` command.
+Qmake tasks call the editor-independent `qmake-workflow` command. Rust, Lua,
+CMake, QML, and Pkl use their provisioned language servers; `.pro`, `.pri`, and
+`.prf` files use the Make parser because qmake has no maintained Tree-sitter
+grammar or language server.

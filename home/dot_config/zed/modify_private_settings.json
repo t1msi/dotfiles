@@ -1,0 +1,17 @@
+{{- /* chezmoi:modify-template */ -}}
+{{- $settings := dict -}}
+{{- if (.chezmoi.stdin | trim) -}}
+{{-   $settings = .chezmoi.stdin | fromJsonc -}}
+{{- end -}}
+{{- $settings = $settings | setValueAtPath "auto_install_extensions.lua" true -}}
+{{- $settings = $settings | setValueAtPath "auto_install_extensions.make" true -}}
+{{- $settings = $settings | setValueAtPath "auto_install_extensions.neocmake" true -}}
+{{- $settings = $settings | setValueAtPath "auto_install_extensions.pkl" true -}}
+{{- $settings = $settings | setValueAtPath "auto_install_extensions.qml" true -}}
+{{- $settings = $settings | setValueAtPath "file_types.Make" (list "makefile" "Makefile" "GNUmakefile" "OCamlMakefile" "mk" "mak" "pro" "pri" "prf") -}}
+{{- $settings = $settings | setValueAtPath "semantic_tokens" "combined" -}}
+{{- $settings = $settings | setValueAtPath "lsp.clangd.binary.arguments" (list "--background-index" "--clang-tidy" "--header-insertion=iwyu" "--query-driver=/usr/bin/c++,/usr/bin/g++*,/usr/bin/gcc*") -}}
+{{- $settings = $settings | setValueAtPath "lsp.rust-analyzer.initialization_options.check.command" "clippy" -}}
+{{- $settings = $settings | setValueAtPath "lsp.rust-analyzer.initialization_options.cargo.allFeatures" true -}}
+{{- $settings = $settings | setValueAtPath "lsp.rust-analyzer.initialization_options.procMacro.enable" true -}}
+{{ $settings | toPrettyJson }}

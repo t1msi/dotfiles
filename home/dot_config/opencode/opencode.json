@@ -20,5 +20,59 @@
       }
     }
   },
+  "lsp": {
+    "basedpyright": {
+      "command": ["basedpyright-langserver", "--stdio"],
+      "extensions": [".py", ".pyi"]
+    },
+    "clangd": {
+      "command": [
+        "clangd",
+        "--background-index",
+        "--clang-tidy",
+        "--header-insertion=iwyu",
+        "--query-driver=/usr/bin/c++,/usr/bin/g++*,/usr/bin/gcc*"
+      ],
+      "extensions": [
+        ".c",
+        ".cpp",
+        ".cc",
+        ".cxx",
+        ".c++",
+        ".h",
+        ".hpp",
+        ".hh",
+        ".hxx",
+        ".h++"
+      ]
+    },
+    "rust": {
+      "command": ["rust-analyzer"],
+      "extensions": [".rs"],
+      "initialization": {
+        "check": {
+          "command": "clippy"
+        },
+        "cargo": {
+          "allFeatures": true
+        },
+        "procMacro": {
+          "enable": true
+        }
+      }
+    },
+    "neocmakelsp": {
+      "command": ["neocmakelsp", "stdio"],
+      "extensions": [".cmake", "CMakeLists.txt"]
+    },
+    "qmlls": {
+      "command": ["qmlls"],
+      "extensions": [".qml", ".qmljs"]
+    },
+    "pkl": {
+      "command": ["pkl-lsp"],
+      "extensions": [".pkl", ".pcf"]
+    }
+  },
   "plugin": ["opencode-kimi-full", "opencode-xai-oauth"]
 }

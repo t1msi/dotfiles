@@ -12,6 +12,7 @@ vim.lsp.config("clangd", {
     "--clang-tidy",
     "--header-insertion=iwyu",
     "--compile-commands-dir=" .. (vim.env.QMAKE_BUILD_DIR or "build"),
+    "--query-driver=/usr/bin/c++,/usr/bin/g++*,/usr/bin/gcc*",
   },
 })
 
@@ -27,7 +28,29 @@ vim.lsp.config("neocmake", {
   capabilities = capabilities,
 })
 
-vim.lsp.enable({ "ansiblels", "basedpyright", "bashls", "clangd", "neocmake", "sqlls", "yamlls" })
+vim.lsp.config("rust_analyzer", {
+  settings = {
+    ["rust-analyzer"] = {
+      cargo = { allFeatures = true },
+      check = { command = "clippy" },
+      procMacro = { enable = true },
+    },
+  },
+})
+
+vim.lsp.enable({
+  "ansiblels",
+  "basedpyright",
+  "bashls",
+  "clangd",
+  "lua_ls",
+  "neocmake",
+  "pkl",
+  "qmlls",
+  "rust_analyzer",
+  "sqlls",
+  "yamlls",
+})
 
 vim.api.nvim_create_autocmd("LspAttach", {
   group = vim.api.nvim_create_augroup("lsp-keymaps", { clear = true }),
