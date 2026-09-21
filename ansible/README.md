@@ -1,6 +1,6 @@
-# Ubuntu provisioning
+# Workstation provisioning
 
-Run the repository bootstrap from an Ubuntu x86_64 workstation:
+Run the repository bootstrap from an Ubuntu x86_64 graphical workstation:
 
 ```bash
 ./bootstrap
@@ -47,6 +47,11 @@ remote editor helpers. Use Zed's native SSH Remote Development support or the
 loopback-only Neovide helpers documented in `home/dot_local/bin/README.md`; the
 remote host does not need a GPU.
 
+The headless remote playbook also supports 64-bit Raspberry Pi OS/Debian 12 on
+`aarch64`. It installs architecture-specific Neovim, chezmoi, Node.js, Rust,
+NeoCMakeLSP, LuaLS, qmlls, Java, and Pkl builds. Zed remains on the local
+workstation and connects through native Remote Development.
+
 For a remote host, first make sure its non-root development user has Python 3,
 SSH access, and sudo. Then use the dedicated wrapper with the same inventory and
 key options as any other Ansible playbook:
@@ -54,12 +59,21 @@ key options as any other Ansible playbook:
 ```bash
 # Run once on the device console.
 sudo apt-get update
-sudo apt-get install --yes openssh-server python3
+sudo apt-get install --yes openssh-server python3 python3-apt sudo
 sudo systemctl enable --now ssh
 
 # Run on the development workstation if the key is not installed yet.
 chmod 600 "$HOME/.ssh/device"
 ssh-copy-id -i "$HOME/.ssh/device.pub" developer@device-address
+```
+
+For Raspberry Pi OS, verify that the image is 64-bit Bookworm before running
+Ansible:
+
+```bash
+dpkg --print-architecture # arm64
+uname -m                  # aarch64
+cat /etc/debian_version   # 12.x
 ```
 
 Add a machine-local `Host devbox` entry to `~/.ssh/config` and verify it with
@@ -82,11 +96,27 @@ remote-dev-workflow prepare \
   -u developer
 ```
 
-`check` adds Ansible check mode. `prepare` provisions the headless workstation,
+For a direct Raspberry Pi address, machine-local environment values keep the
+command short:
+
+```bash
+export REMOTE_DEV_HOST="192.168.1.50"
+export REMOTE_DEV_USER="pi"
+export REMOTE_DEV_KEY_FILE="$HOME/.ssh/veresk_dev"
+
+remote-dev-workflow prepare
+```
+
+`check` adds Ansible check mode and is useful after the host has been provisioned.
+On a fresh host, run `prepare` directly because check mode cannot install the
+downloaded tools needed by later validation tasks. `prepare` provisions the host,
 copies only the tracked `home/` chezmoi source, previews its changes, and applies
 it. Always use `--limit` when a shared production inventory contains hosts that
 must not become development machines. The key, inventory, SSH aliases, and
 passwords remain outside this repository.
+
+The project-specific Qt 5.15 SDK is not installed on ARM. If an ARM Qt SDK is
+available separately, set `QMAKE_BIN` in the remote user's `.bashrc.local`.
 
 Node.js and its bundled npm are also installed from a pinned upstream archive.
 Do not add Ubuntu's separate `npm` package: it conflicts with NodeSource and

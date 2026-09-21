@@ -2,33 +2,62 @@
 workstation_gui_enabled: true
 
 neovim_version: 0.12.2
-neovim_archive_sha256: 31cf85945cb600d96cdf69f88bc68bec814acbff50863c5546adef3a1bcef260
 chezmoi_version: 2.72.2
-chezmoi_binary_sha256: 64a07b2e956be7ea18a9d26cbc76aab96a8b45a6b7b6f58c41ff782a7dc361ab
-nodejs_version: 22.22.2
-nodejs_archive_sha256: 88fd1ce767091fd8d4a99fdb2356e98c819f93f3b1f8663853a2dee9b438068a
+nodejs_version: 24.21.0
 tree_sitter_cli_version: 0.27.0
 tree_sitter_rust_version: 1.90.0
 rustup_version: 1.29.0
-rustup_init_sha256: 4acc9acc76d5079515b46346a485974457b5a79893cfb01112423c89aeb5aa10
 rust_toolchain_version: 1.96.0
 neocmakelsp_version: 0.11.1
-neocmakelsp_archive_sha256: fef0e2dcf55ff1b9df9ab77d74eabd9104392eff044d5f8b206f443089fa87c7
 lua_language_server_version: 3.19.1
-lua_language_server_archive_sha256: e9235d2d72ef55bc41cf8c99cda2ed64777682024b4bb81f5dea425060c5cbb8
 qmlls_version: 0.8
-qmlls_archive_sha256: 1aea7210bcf0fbc6a8a8f3efc80f96f70c6b2f532f87bfeb865905133be232d9
 pkl_version: 0.32.1
-pkl_binary_sha256: 3180b62da95c0cad1d904e9bb6c5f4a8f9032413c21e53194bb91ff1ee5f3211
 pkl_lsp_version: 0.8.0
 pkl_lsp_jar_sha256: 06f9de45a21aa7a16bf5c052513521f98793cd9c57036b9368fcad799e96a8ff
 java_runtime_version: 25.0.4.1_1
-java_runtime_archive_sha256: 1731a34baadec5479258ea0202e4d5d865d2efeee60cb0c7d7eb056fe96ca219
 zed_version: 1.20.2
 zed_archive_sha256: 647dc85e09fcd99cd175365a89b7b70ccf96469c4844eb8ae6eb83dfa82f7600
 neovide_version: 0.16.2
 neovide_archive_sha256: d3f4a50921b7144d6ab45096587d5f9bef3ad167f3d83e522e100b73efa73560
 neovide_icon_sha256: a6870391ded090cc5f24f0cb40a8ffa67930faf109a419753ec25ac0a03177a9
+
+workstation_asset_matrix:
+  x86_64:
+    rust_target: x86_64-unknown-linux-gnu
+    neovim_arch: x86_64
+    neovim_sha256: 31cf85945cb600d96cdf69f88bc68bec814acbff50863c5546adef3a1bcef260
+    chezmoi_arch: amd64
+    chezmoi_sha256: a2be1b8bcdf06c6f173e070bb3ddbcc52c50478fe9b57f6e6c63d15c7cff4f03
+    nodejs_arch: x64
+    nodejs_sha256: fd8e59d5a511510f6a298afb548f18c7d2b1be404d8b4a27d94fbe49f56cb2d6
+    rustup_sha256: 4acc9acc76d5079515b46346a485974457b5a79893cfb01112423c89aeb5aa10
+    neocmakelsp_sha256: fef0e2dcf55ff1b9df9ab77d74eabd9104392eff044d5f8b206f443089fa87c7
+    lua_ls_arch: x64
+    lua_ls_sha256: e9235d2d72ef55bc41cf8c99cda2ed64777682024b4bb81f5dea425060c5cbb8
+    qmlls_arch: x64
+    qmlls_sha256: 1aea7210bcf0fbc6a8a8f3efc80f96f70c6b2f532f87bfeb865905133be232d9
+    java_arch: x64
+    java_sha256: 1731a34baadec5479258ea0202e4d5d865d2efeee60cb0c7d7eb056fe96ca219
+    pkl_arch: amd64
+    pkl_sha256: 3180b62da95c0cad1d904e9bb6c5f4a8f9032413c21e53194bb91ff1ee5f3211
+  aarch64:
+    rust_target: aarch64-unknown-linux-gnu
+    neovim_arch: arm64
+    neovim_sha256: f697d4e4582b6e4b5c3c26e76e06ce26efa08ba1768e03fd2733fcc422bb0490
+    chezmoi_arch: arm64
+    chezmoi_sha256: 499925fd10804b7c1a5dc4b4a275c8935261d02a4be0c18bbd41b7747810de67
+    nodejs_arch: arm64
+    nodejs_sha256: 6ad1325edbdb5649c379b75a237147a666c95d4f9ae8d340fef2d1575d289ad2
+    rustup_sha256: 9732d6c5e2a098d3521fca8145d826ae0aaa067ef2385ead08e6feac88fa5792
+    neocmakelsp_sha256: 8c3bf5bf44395424ead4bdef01af24b2f49bafa231aada242357af252accf8e2
+    lua_ls_arch: arm64
+    lua_ls_sha256: abd2572e8fc929dc838a81ffb8473c5bce0bf39bfe8edb4b120b3b623176ce83
+    qmlls_arch: arm64
+    qmlls_sha256: eb356025286aa3c5ed0ef5e8ac3e240156b45a1f5797b0b9957a6bf3ae500b31
+    java_arch: aarch64
+    java_sha256: 34828cbb93ed31c281c84ecb31ddab655d11a802f263c1fc019d42e9e0230fed
+    pkl_arch: aarch64
+    pkl_sha256: a76d2dd47da435a8f911b0347373f47c7e59ea54fb75ff846d20b8df10dba058
 
 qt_qmake_path: /opt/qt-everywhere-src-5.15.2/qtbase/bin/qmake
 

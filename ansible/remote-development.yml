@@ -1,18 +1,10 @@
 ---
-- name: Prepare an Ubuntu remote development host
+- name: Prepare a remote development host
   hosts: all
   gather_facts: true
   vars:
     workstation_gui_enabled: false
     remote_development_source: "{{ ansible_env.HOME }}/.local/share/remote-development-dotfiles"
-
-  pre_tasks:
-    - name: Require Ubuntu
-      ansible.builtin.assert:
-        that:
-          - ansible_distribution == "Ubuntu"
-          - ansible_architecture == "x86_64"
-        fail_msg: This playbook currently supports x86_64 Ubuntu only.
 
   roles:
     - workstation

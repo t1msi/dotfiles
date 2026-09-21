@@ -165,3 +165,13 @@ nvim-ssh devbox /home/developer/src/project project
 The remote checkout, compiler, language servers, task commands, and program all
 stay on the remote host. SSH identities and host aliases remain in the local
 `~/.ssh/config`.
+
+Headless Debian 12 aarch64, including 64-bit Raspberry Pi OS Bookworm, is
+supported. For a fresh Pi, run `prepare` directly; use `check` for later updates
+after the toolchain exists:
+
+```bash
+export REMOTE_DEV_HOST="192.168.1.50"
+export REMOTE_DEV_USER="pi"
+remote-dev-workflow prepare
+```

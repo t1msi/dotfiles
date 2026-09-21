@@ -31,6 +31,8 @@ remote-dev-workflow prepare \
 The destination may instead come from an inventory file; add `--limit devbox`
 when that inventory contains more than the intended development host. Confirm
 that `ssh devbox` works, then connect through the Remote Projects dialog.
+The same workflow supports headless Debian 12 aarch64 Raspberry Pi hosts; Zed
+itself continues to run locally.
 
 ## Key bindings
 

@@ -3,14 +3,18 @@ set -euo pipefail
 
 usage() {
     cat <<'EOF'
-Usage: remote-dev-workflow <check|prepare> ANSIBLE_OPTIONS
+Usage: remote-dev-workflow <check|prepare> [ANSIBLE_OPTIONS]
 
-Provision a headless Ubuntu development host with the repository's pinned
-workstation playbook and credential-free chezmoi configuration. An explicit
-inventory is required.
+Provision a supported headless development host with the repository's pinned
+workstation playbook and credential-free chezmoi configuration. Supported
+targets are Ubuntu x86_64 and Debian 12 aarch64. Pass an inventory or set
+REMOTE_DEV_HOST.
 
 Examples:
   export REMOTE_DEV_KEY_FILE="$HOME/.ssh/device"
+  export REMOTE_DEV_HOST="devbox"
+  export REMOTE_DEV_USER="developer"
+  remote-dev-workflow prepare
   remote-dev-workflow check \
     -i 'devbox,' -u developer
   remote-dev-workflow prepare \
@@ -20,6 +24,7 @@ Set REMOTE_DEV_DOTFILES_SOURCE if the dotfiles checkout is not at
 $HOME/src/dotfiles and the command is run outside that checkout.
 Set REMOTE_DEV_KEY_FILE to a machine-local default for --key-file. An explicit
 --key-file or --private-key option takes precedence.
+REMOTE_DEV_HOST and REMOTE_DEV_USER provide defaults for -i and -u.
 EOF
 }
 
@@ -32,7 +37,7 @@ if [[ ${1:-} == help || ${1:-} == -h || ${1:-} == --help ]]; then
     usage
     exit 0
 fi
-if (( $# < 2 )); then
+if (( $# < 1 )); then
     usage >&2
     exit 2
 fi
@@ -49,13 +54,26 @@ esac
 
 has_inventory=false
 has_key_file=false
+has_user=false
 for argument in "$@"; do
     case $argument in
-        -i | --inventory | --inventory=*) has_inventory=true ;;
+        -i | -i?* | --inventory | --inventory=* | --inventory-file | --inventory-file=*) has_inventory=true ;;
         --key-file | --key-file=* | --private-key | --private-key=*) has_key_file=true ;;
+        -u | --user | --user=*) has_user=true ;;
     esac
 done
-[[ $has_inventory == true ]] || die "pass an explicit inventory with -i or --inventory"
+
+arguments=("$@")
+if [[ $has_inventory == false && -n ${REMOTE_DEV_HOST:-} ]]; then
+    [[ $REMOTE_DEV_HOST != -* ]] || die "REMOTE_DEV_HOST must not begin with a dash"
+    arguments=(-i "${REMOTE_DEV_HOST%,}," "${arguments[@]}")
+    has_inventory=true
+fi
+if [[ $has_user == false && -n ${REMOTE_DEV_USER:-} ]]; then
+    [[ $REMOTE_DEV_USER != -* ]] || die "REMOTE_DEV_USER must not begin with a dash"
+    arguments=(-u "$REMOTE_DEV_USER" "${arguments[@]}")
+fi
+[[ $has_inventory == true ]] || die "pass -i/--inventory or set REMOTE_DEV_HOST"
 
 dotfiles_source=${REMOTE_DEV_DOTFILES_SOURCE:-}
 if [[ -z $dotfiles_source && -f $PWD/ansible/remote-development.yml ]]; then
@@ -75,7 +93,6 @@ if [[ ! -x $ansible_playbook ]]; then
 fi
 [[ -n $ansible_playbook ]] || die "ansible-playbook is not installed; run ./bootstrap locally"
 
-arguments=("$@")
 if [[ $has_key_file == false && -n ${REMOTE_DEV_KEY_FILE:-} ]]; then
     [[ -r $REMOTE_DEV_KEY_FILE ]] || die "key file is not readable: $REMOTE_DEV_KEY_FILE"
     arguments=(--key-file "$REMOTE_DEV_KEY_FILE" "${arguments[@]}")
