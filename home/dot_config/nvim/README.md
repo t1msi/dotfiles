@@ -46,3 +46,7 @@ for qmake and CMake, plus CMake tests. `clean` preserves configuration; `clear`
 deletes the build directory; `rebuild` clears, configures, and builds.
 Project-specific configure arguments belong in `.qmake-workflow.args` or
 `.cmake-workflow.args`, one per line.
+
+Project discovery also adds tasks for the dotfiles bootstrap, a venv-backed
+`main.py`, its SDK smoke test, and the diagnostics repeater and drone runs when
+their defining files are present.
