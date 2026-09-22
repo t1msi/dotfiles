@@ -1,0 +1,21 @@
+{{- /* chezmoi:modify-template */ -}}
+{{- $content := .chezmoi.stdin | replaceAllRegex "(?ms)\n?# BEGIN CHEZMOI MANAGED BLOCK\n.*?# END CHEZMOI MANAGED BLOCK\n?" "" | trimSuffix "\n" -}}
+{{- $hasLocalConfig := contains ".bashrc.local" $content -}}
+{{- if $content -}}
+{{ $content }}
+
+{{ end -}}
+# BEGIN CHEZMOI MANAGED BLOCK
+# Keep user-installed development tools available to editor task shells.
+case ":$PATH:" in
+  *":$HOME/.local/bin:"*) ;;
+  *) export PATH="$HOME/.local/bin:$PATH" ;;
+esac
+{{- if not $hasLocalConfig }}
+
+# Keep machine-specific environment and secrets outside this repository.
+if [ -r "$HOME/.bashrc.local" ]; then
+  . "$HOME/.bashrc.local"
+fi
+{{- end }}
+# END CHEZMOI MANAGED BLOCK

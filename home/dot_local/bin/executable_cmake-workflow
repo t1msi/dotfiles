@@ -1,0 +1,169 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+usage() {
+    cat <<'EOF'
+Usage: cmake-workflow <command> [arguments...]
+
+Commands:
+  show                 Print the resolved project and build paths
+  configure [ARGS...]  Configure with extra CMake arguments
+  build [ARGS...]      Build with extra cmake --build arguments
+  test [ARGS...]       Run CTest with extra arguments
+  clean                Run the generated clean target
+  clear                Remove the out-of-source build directory
+  rebuild [ARGS...]    Clear, configure with extra CMake arguments, and build
+
+Environment:
+  CMAKE_PROJECT_DIR    Source directory; otherwise discovered above $PWD
+  CMAKE_BUILD_DIR      Build directory, default: <project>/build
+  CMAKE_BUILD_TYPE     Build type, default: Debug
+  CMAKE_GENERATOR      Optional CMake generator
+  CMAKE_JOBS           Parallel job count, default: nproc
+
+Project configuration:
+  .cmake-workflow.args One persistent CMake configure argument per line
+EOF
+}
+
+die() {
+    printf 'cmake-workflow: %s\n' "$*" >&2
+    exit 1
+}
+
+require_command() {
+    command -v "$1" >/dev/null 2>&1 || die "required command not found: $1"
+}
+
+resolve_project_root() {
+    if [[ -n ${CMAKE_PROJECT_DIR:-} ]]; then
+        local configured_root
+        configured_root=$(realpath -e "$CMAKE_PROJECT_DIR" 2>/dev/null) || die "project directory not found: $CMAKE_PROJECT_DIR"
+        [[ -f $configured_root/CMakeLists.txt ]] || die "CMakeLists.txt not found in: $configured_root"
+        printf '%s\n' "$configured_root"
+        return
+    fi
+
+    local directory=$PWD
+    while :; do
+        if [[ -f $directory/CMakeLists.txt ]]; then
+            printf '%s\n' "$directory"
+            return
+        fi
+        [[ $directory == / ]] && break
+        directory=${directory%/*}
+        [[ -n $directory ]] || directory=/
+    done
+
+    die "could not find CMakeLists.txt above $PWD; set CMAKE_PROJECT_DIR"
+}
+
+print_command() {
+    printf '+'
+    printf ' %q' "$@"
+    printf '\n'
+}
+
+command_name=${1:-help}
+if (( $# > 0 )); then
+    shift
+fi
+
+case $command_name in
+    help | -h | --help)
+        usage
+        exit 0
+        ;;
+esac
+
+require_command realpath
+require_command cmake
+project_root=$(resolve_project_root)
+build_dir=${CMAKE_BUILD_DIR:-$project_root/build}
+if [[ $build_dir != /* ]]; then
+    build_dir=$project_root/$build_dir
+fi
+build_dir=$(realpath -m "$build_dir")
+jobs=${CMAKE_JOBS:-$(nproc)}
+configure_arguments=(
+    "-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE:-Debug}"
+    -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+)
+if [[ -n ${CMAKE_GENERATOR:-} ]]; then
+    configure_arguments+=(-G "$CMAKE_GENERATOR")
+fi
+arguments_file=$project_root/.cmake-workflow.args
+if [[ -f $arguments_file ]]; then
+    while IFS= read -r argument || [[ -n $argument ]]; do
+        [[ $argument =~ ^[[:space:]]*(#|$) ]] && continue
+        configure_arguments+=("$argument")
+    done < "$arguments_file"
+fi
+
+configure_project() {
+    print_command cmake -S "$project_root" -B "$build_dir" "${configure_arguments[@]}" "$@"
+    cmake -S "$project_root" -B "$build_dir" "${configure_arguments[@]}" "$@"
+    touch "$build_dir/.cmake-workflow-build"
+}
+
+ensure_configured() {
+    if [[ ! -f $build_dir/CMakeCache.txt ]]; then
+        configure_project
+    fi
+}
+
+build_project() {
+    ensure_configured
+    print_command cmake --build "$build_dir" --parallel "$jobs" "$@"
+    cmake --build "$build_dir" --parallel "$jobs" "$@"
+}
+
+clear_build_directory() {
+    [[ $build_dir != / && $build_dir != "$project_root" ]] || die "refusing to clear unsafe build directory: $build_dir"
+    if [[ $build_dir != "$project_root"/* && ! -f $build_dir/.cmake-workflow-build ]]; then
+        die "refusing to clear unmarked external build directory: $build_dir"
+    fi
+    if [[ -e $build_dir || -L $build_dir ]]; then
+        print_command cmake -E remove_directory "$build_dir"
+        cmake -E remove_directory "$build_dir"
+    fi
+}
+
+case $command_name in
+    show)
+        printf 'project_root=%s\n' "$project_root"
+        printf 'build_dir=%s\n' "$build_dir"
+        printf 'compile_commands=%s\n' "$build_dir/compile_commands.json"
+        printf 'configure_arguments='
+        printf ' %q' "${configure_arguments[@]}"
+        printf '\n'
+        ;;
+    configure)
+        configure_project "$@"
+        ;;
+    build)
+        build_project "$@"
+        ;;
+    test)
+        ensure_configured
+        print_command ctest --test-dir "$build_dir" --output-on-failure "$@"
+        ctest --test-dir "$build_dir" --output-on-failure "$@"
+        ;;
+    clean)
+        ensure_configured
+        print_command cmake --build "$build_dir" --target clean
+        cmake --build "$build_dir" --target clean
+        ;;
+    clear)
+        clear_build_directory
+        ;;
+    rebuild)
+        clear_build_directory
+        configure_project "$@"
+        build_project
+        ;;
+    *)
+        usage >&2
+        die "unknown command: $command_name"
+        ;;
+esac

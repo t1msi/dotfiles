@@ -1,0 +1,112 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+    cat <<'EOF'
+Usage: remote-dev-workflow <check|prepare> [ANSIBLE_OPTIONS]
+
+Provision a supported headless development host with the repository's pinned
+workstation playbook and credential-free chezmoi configuration. Supported
+targets are Ubuntu x86_64 and Debian 12 aarch64. Pass an inventory or set
+REMOTE_DEV_HOST.
+
+Examples:
+  export REMOTE_DEV_KEY_FILE="$HOME/.ssh/device"
+  export REMOTE_DEV_HOST="devbox"
+  export REMOTE_DEV_USER="developer"
+  remote-dev-workflow prepare
+  remote-dev-workflow check \
+    -i 'devbox,' -u developer
+  remote-dev-workflow prepare \
+    -i inventory-prod.yml --limit devbox -u developer
+
+Set REMOTE_DEV_DOTFILES_SOURCE if the dotfiles checkout is not at
+$HOME/src/dotfiles and the command is run outside that checkout.
+Set REMOTE_DEV_KEY_FILE to a machine-local default for --key-file. An explicit
+--key-file or --private-key option takes precedence.
+REMOTE_DEV_HOST and REMOTE_DEV_USER provide defaults for -i and -u.
+Remote defaults stage pinned assets through the controller and disable APT and
+network-dependent package installers. Override their Ansible variables only for
+hosts where package changes and outbound network access are acceptable.
+EOF
+}
+
+die() {
+    printf 'remote-dev-workflow: %s\n' "$*" >&2
+    exit 1
+}
+
+if [[ ${1:-} == help || ${1:-} == -h || ${1:-} == --help ]]; then
+    usage
+    exit 0
+fi
+if (( $# < 1 )); then
+    usage >&2
+    exit 2
+fi
+
+action=$1
+shift
+case $action in
+    check | prepare) ;;
+    *)
+        usage >&2
+        die "unknown command: $action"
+        ;;
+esac
+
+has_inventory=false
+has_key_file=false
+has_user=false
+for argument in "$@"; do
+    case $argument in
+        -i | -i?* | --inventory | --inventory=* | --inventory-file | --inventory-file=*) has_inventory=true ;;
+        --key-file | --key-file=* | --private-key | --private-key=*) has_key_file=true ;;
+        -u | --user | --user=*) has_user=true ;;
+    esac
+done
+
+arguments=("$@")
+if [[ $has_inventory == false && -n ${REMOTE_DEV_HOST:-} ]]; then
+    [[ $REMOTE_DEV_HOST != -* ]] || die "REMOTE_DEV_HOST must not begin with a dash"
+    arguments=(-i "${REMOTE_DEV_HOST%,}," "${arguments[@]}")
+    has_inventory=true
+fi
+if [[ $has_user == false && -n ${REMOTE_DEV_USER:-} ]]; then
+    [[ $REMOTE_DEV_USER != -* ]] || die "REMOTE_DEV_USER must not begin with a dash"
+    arguments=(-u "$REMOTE_DEV_USER" "${arguments[@]}")
+fi
+[[ $has_inventory == true ]] || die "pass -i/--inventory or set REMOTE_DEV_HOST"
+
+dotfiles_source=${REMOTE_DEV_DOTFILES_SOURCE:-}
+if [[ -z $dotfiles_source && -f $PWD/ansible/remote-development.yml ]]; then
+    dotfiles_source=$PWD
+fi
+if [[ -z $dotfiles_source ]]; then
+    dotfiles_source=$HOME/src/dotfiles
+fi
+playbook=$dotfiles_source/ansible/remote-development.yml
+config=$dotfiles_source/ansible/ansible.cfg
+[[ -f $playbook ]] || die "playbook not found: $playbook"
+[[ -f $config ]] || die "Ansible configuration not found: $config"
+
+ansible_playbook=$HOME/.local/share/dotfiles/ansible/bin/ansible-playbook
+if [[ ! -x $ansible_playbook ]]; then
+    ansible_playbook=$(command -v ansible-playbook || true)
+fi
+[[ -n $ansible_playbook ]] || die "ansible-playbook is not installed; run ./bootstrap locally"
+
+if [[ $has_key_file == false && -n ${REMOTE_DEV_KEY_FILE:-} ]]; then
+    [[ -r $REMOTE_DEV_KEY_FILE ]] || die "key file is not readable: $REMOTE_DEV_KEY_FILE"
+    arguments=(--key-file "$REMOTE_DEV_KEY_FILE" "${arguments[@]}")
+fi
+arguments+=(--extra-vars workstation_gui_enabled=false)
+if [[ $action == check ]]; then
+    arguments+=(--check)
+fi
+
+export ANSIBLE_CONFIG=${ANSIBLE_CONFIG:-$config}
+printf '+'
+printf ' %q' "$ansible_playbook" "${arguments[@]}" "$playbook"
+printf '\n'
+exec "$ansible_playbook" "${arguments[@]}" "$playbook"

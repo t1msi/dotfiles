@@ -5,7 +5,9 @@ conform.setup({
   formatters_by_ft = {
     c = { "clang_format" },
     cpp = { "clang_format" },
+    pkl = { "pkl" },
     python = { "ruff_format" },
+    rust = { "rustfmt" },
     sh = { "shfmt" },
   },
   notify_no_formatters = false,

@@ -1,8 +1,8 @@
-# Ubuntu workstation
+# Developer workstation
 
-Reproducible configuration for an Ubuntu development workstation. Chezmoi owns
-user configuration, while Ansible installs system packages and development
-tools.
+Reproducible configuration for Ubuntu x86_64 workstations and headless Debian
+12 aarch64 development hosts. Chezmoi owns user configuration, while Ansible
+installs system packages and development tools.
 
 ## Layout
 

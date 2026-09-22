@@ -7,6 +7,8 @@ map("n", "<C-S-Tab>", "<cmd>tabprevious<cr>", { desc = "Previous tab" })
 map("n", "<C-Right>", "<cmd>bnext<cr>", { desc = "Next buffer" })
 map("n", "<C-Left>", "<cmd>bprevious<cr>", { desc = "Previous buffer" })
 map("n", "<leader>bd", "<cmd>bdelete<cr>", { desc = "Delete buffer" })
+map("n", "<F3>", "n", { desc = "Next search match" })
+map("n", "<S-F3>", "N", { desc = "Previous search match" })
 map("n", "<F8>", "<cmd>cnext<cr>", { desc = "Next quickfix item" })
 map("n", "<S-F8>", "<cmd>cprevious<cr>", { desc = "Previous quickfix item" })
 

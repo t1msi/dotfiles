@@ -20,8 +20,14 @@ Typical use:
 ```bash
 qmake-workflow configure
 qmake-workflow build
+qmake-workflow clean
+qmake-workflow clear
+qmake-workflow rebuild
 qmake-workflow compdb
 qmake-workflow lint
+qmake-workflow test unit
+qmake-workflow test ugcs list
+qmake-workflow test ugcs HealthCheckExecutorTest
 qmake-workflow run
 qmake-workflow debug --some-application-argument
 ```
@@ -42,11 +48,67 @@ to `configure` and arbitrary make options or targets to `build` and `compdb`.
 
 Environment variables listed by `qmake-workflow --help` override every default.
 For a persistent machine-local override, export them from `~/.bashrc.local`.
+For project-local qmake options, put one argument per line in
+`.qmake-workflow.args`; these arguments are applied to every configure,
+including the configure phase of `rebuild`.
+
+`clean` runs the generated Make target and preserves qmake configuration.
+`clear` deletes the shadow build directory. `rebuild` clears it, reruns qmake,
+and performs a complete build. Clear operations refuse the source directory and
+unmarked external directories.
 
 QtCreator should use its own shadow directory, the same three qmake arguments,
 `<buildDir>/staging/Course` as the executable, and `<buildDir>/staging` as the
 working directory. Keep QtCreator `.user` files and generated compilation
 databases out of Git.
+
+QGC has two test registries in the staged Debug application. Stock QGC tests
+run under Xvfb and accept an optional exact class name:
+
+```bash
+qmake-workflow test unit
+qmake-workflow test unit SomeTestClass
+```
+
+UGCS tests use the singular application option `--ugcs-test`. List names before
+running a targeted class:
+
+```bash
+qmake-workflow test ugcs list
+qmake-workflow test ugcs HealthCheckExecutorTest
+```
+
+`qmake-workflow test ugcs all` is explicit because the full custom suite
+contains `VideoReopenTest`, which can hang. All application tests require an
+already-built Debug `Course` binary.
+
+## cmake-workflow
+
+`cmake-workflow` provides equivalent editor-independent operations for CMake
+projects. It discovers the nearest `CMakeLists.txt`, defaults to an out-of-source
+`build` directory, and enables `compile_commands.json`:
+
+```bash
+cmake-workflow configure
+cmake-workflow build
+cmake-workflow test
+cmake-workflow clean
+cmake-workflow clear
+cmake-workflow rebuild
+```
+
+`CMAKE_BUILD_DIR`, `CMAKE_BUILD_TYPE`, `CMAKE_GENERATOR`, and `CMAKE_JOBS`
+override the defaults. Project-specific configure options belong in
+`.cmake-workflow.args`, one argument per line. As with qmake, `clean` preserves
+the configured build tree while `clear` removes it and `rebuild` recreates it.
+
+Create a small C++17 CMake project that is ready for these commands with:
+
+```bash
+new-cmake-project ~/src/example
+```
+
+The generated smoke test runs through `cmake-workflow test`.
 
 ## Remote Neovide
 
@@ -71,3 +133,50 @@ NEOVIDE_LOCAL_PORT=7777 NVIM_REMOTE_PORT=7777 \
 
 For a two-terminal workflow, run `nvim-remote-server /path/to/project` on the
 remote machine and create an equivalent loopback SSH tunnel manually.
+
+## Remote development
+
+Prepare a host from the dotfiles checkout using Ansible-style connection
+options. Configure the machine-local key path once, then preview and apply:
+
+```bash
+export REMOTE_DEV_KEY_FILE="$HOME/.ssh/device" # ~/.bashrc.local
+remote-dev-workflow check \
+  -i 'devbox,' -u developer
+remote-dev-workflow prepare \
+  -i 'devbox,' -u developer
+```
+
+An inventory file works as well. Limit shared inventories explicitly:
+
+```bash
+remote-dev-workflow prepare \
+  -i inventory-prod.yml \
+  --limit devbox \
+  -u developer
+```
+
+For persistent terminal Neovim, connect through tmux:
+
+```bash
+nvim-ssh devbox /home/developer/src/project project
+```
+
+The remote checkout, compiler, language servers, task commands, and program all
+stay on the remote host. SSH identities and host aliases remain in the local
+`~/.ssh/config`.
+
+Headless Debian 12 aarch64, including 64-bit Raspberry Pi OS Bookworm, is
+supported. For a fresh Pi, run `prepare` directly; use `check` for later updates
+after the toolchain exists:
+
+```bash
+export REMOTE_DEV_HOST="192.168.1.50"
+export REMOTE_DEV_USER="pi"
+remote-dev-workflow prepare
+```
+
+Remote preparation downloads and verifies pinned standalone tools on the local
+controller, then copies them over SSH. It does not use APT or run remote Rust,
+npm, or pip downloads unless their policy variables are explicitly enabled; see
+`ansible/README.md` for the opt-in commands.

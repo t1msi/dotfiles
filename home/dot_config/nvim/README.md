@@ -23,11 +23,44 @@ They can also be updated explicitly with `:TSUpdate`.
 | `<leader>f` | Format buffer or selection |
 | `<leader>ll` | Lint current buffer |
 | `<leader>tr` / `<leader>tt` | Run a task / toggle task list |
-| `<leader>tb` | Build the current qmake project |
+| `<leader>tb` | Build the current qmake or CMake project |
+| `<C-t>` | Open a new tab page |
+| `<F3>` / `<S-F3>` | Next / previous search match |
 | `<F4>` | Switch C/C++ source and header |
 | `<F5>` / `<F10>` / `<F11>` / `<F12>` | Continue / step over / step into / step out |
 | `<leader>db` | Toggle breakpoint |
 
+The leader is comma. Use `<C-w>s` for a horizontal split, `<C-w>v` for a
+vertical split, `<C-w>c` to close the current window, and `<C-w>o` to keep only
+the current window. `<A-h/j/k/l>` moves between windows from normal, insert,
+and terminal mode.
+
 The C/C++ debugger uses `lldb-dap` or `lldb-vscode`; Python uses
 `debugpy-adapter`. Tool installation belongs to the Ansible workstation role.
-Qmake tasks call the editor-independent `qmake-workflow` command.
+Qmake tasks call the editor-independent `qmake-workflow` command. Rust, Lua,
+CMake, QML, and Pkl use their provisioned language servers; `.pro`, `.pri`, and
+`.prf` files use the Make parser because qmake has no maintained Tree-sitter
+grammar or language server.
+
+The task picker includes configure, build, clean, clear, and rebuild operations
+for qmake and CMake, plus CMake tests. `clean` preserves configuration; `clear`
+deletes the build directory; `rebuild` clears, configures, and builds.
+Project-specific configure arguments belong in `.qmake-workflow.args` or
+`.cmake-workflow.args`, one per line.
+
+Qmake tasks include stock unit tests, the UGCS test list, and the targeted
+`HealthCheckExecutorTest`. Use the terminal workflow for another exact class.
+
+Project discovery also adds tasks for the dotfiles bootstrap, a venv-backed
+`main.py`, its SDK smoke and syntax checks, and the diagnostics repeater and
+drone runs when their defining files are present.
+
+For remote terminal development, prepare the host with `remote-dev-workflow`
+and attach to a persistent tmux/Neovim session:
+
+```bash
+nvim-ssh devbox /home/developer/src/project project
+```
+
+For a local graphical UI backed by remote Neovim, use `neovide-remote` as
+documented in `~/.local/bin/README.md`.

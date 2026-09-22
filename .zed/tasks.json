@@ -1,0 +1,8 @@
+[
+  {
+    "label": "dotfiles: bootstrap (provision and apply)",
+    "command": "./bootstrap",
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "save": "all"
+  }
+]

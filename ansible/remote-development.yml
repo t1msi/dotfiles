@@ -1,0 +1,64 @@
+---
+- name: Prepare a remote development host
+  hosts: all
+  gather_facts: true
+  vars:
+    workstation_gui_enabled: false
+    workstation_system_packages_enabled: false
+    workstation_apt_update_cache: false
+    workstation_online_installers_enabled: false
+    workstation_assets_from_controller: true
+    remote_development_source: "{{ ansible_env.HOME }}/.local/share/remote-development-dotfiles"
+
+  roles:
+    - workstation
+
+  post_tasks:
+    - name: Reset the remote chezmoi source directory
+      ansible.builtin.file:
+        path: "{{ remote_development_source }}"
+        state: absent
+      when: not ansible_check_mode
+
+    - name: Create the remote chezmoi source directory
+      ansible.builtin.file:
+        path: "{{ remote_development_source }}"
+        state: directory
+        mode: "0700"
+
+    - name: Copy the credential-free chezmoi source
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/../home/"
+        dest: "{{ remote_development_source }}/"
+        directory_mode: "0700"
+        mode: preserve
+
+    - name: Preview remote home configuration changes
+      ansible.builtin.command:
+        argv:
+          - chezmoi
+          - --source
+          - "{{ remote_development_source }}"
+          - diff
+      register: remote_development_chezmoi_diff
+      changed_when: false
+      when: not ansible_check_mode
+
+    - name: Report remote home configuration changes
+      ansible.builtin.debug:
+        var: remote_development_chezmoi_diff.stdout_lines
+      when:
+        - not ansible_check_mode
+        - remote_development_chezmoi_diff.stdout | length > 0
+
+    - name: Apply remote home configuration
+      ansible.builtin.command:
+        argv:
+          - chezmoi
+          - --source
+          - "{{ remote_development_source }}"
+          - apply
+      changed_when: true
+      when:
+        - not ansible_check_mode
+        - remote_development_chezmoi_diff.stdout | length > 0

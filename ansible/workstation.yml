@@ -1,15 +1,7 @@
 ---
-- name: Provision Ubuntu developer workstation
+- name: Provision developer workstation
   hosts: all
   gather_facts: true
-
-  pre_tasks:
-    - name: Require Ubuntu
-      ansible.builtin.assert:
-        that:
-          - ansible_distribution == "Ubuntu"
-          - ansible_architecture == "x86_64"
-        fail_msg: This playbook currently supports x86_64 Ubuntu only.
 
   roles:
     - workstation

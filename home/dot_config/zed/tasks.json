@@ -14,6 +14,27 @@
     "save": "all"
   },
   {
+    "label": "qmake: clean",
+    "command": "qmake-workflow",
+    "args": ["clean"],
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "save": "all"
+  },
+  {
+    "label": "qmake: clear",
+    "command": "qmake-workflow",
+    "args": ["clear"],
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "save": "all"
+  },
+  {
+    "label": "qmake: rebuild",
+    "command": "qmake-workflow",
+    "args": ["rebuild"],
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "save": "all"
+  },
+  {
     "label": "qmake: compilation database",
     "command": "qmake-workflow",
     "args": ["compdb"],
@@ -28,6 +49,27 @@
     "save": "all"
   },
   {
+    "label": "qmake: unit tests",
+    "command": "qmake-workflow",
+    "args": ["test", "unit"],
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "save": "all"
+  },
+  {
+    "label": "qmake: UGCS test list",
+    "command": "qmake-workflow",
+    "args": ["test", "ugcs", "list"],
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "save": "all"
+  },
+  {
+    "label": "qmake: UGCS HealthCheckExecutorTest",
+    "command": "qmake-workflow",
+    "args": ["test", "ugcs", "HealthCheckExecutorTest"],
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "save": "all"
+  },
+  {
     "label": "qmake: run",
     "command": "qmake-workflow",
     "args": ["run"],
@@ -38,6 +80,48 @@
     "label": "qmake: debug",
     "command": "qmake-workflow",
     "args": ["debug"],
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "save": "all"
+  },
+  {
+    "label": "cmake: configure",
+    "command": "cmake-workflow",
+    "args": ["configure"],
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "save": "all"
+  },
+  {
+    "label": "cmake: build",
+    "command": "cmake-workflow",
+    "args": ["build"],
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "save": "all"
+  },
+  {
+    "label": "cmake: test",
+    "command": "cmake-workflow",
+    "args": ["test"],
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "save": "all"
+  },
+  {
+    "label": "cmake: clean",
+    "command": "cmake-workflow",
+    "args": ["clean"],
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "save": "all"
+  },
+  {
+    "label": "cmake: clear",
+    "command": "cmake-workflow",
+    "args": ["clear"],
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "save": "all"
+  },
+  {
+    "label": "cmake: rebuild",
+    "command": "cmake-workflow",
+    "args": ["rebuild"],
     "cwd": "$ZED_WORKTREE_ROOT",
     "save": "all"
   }

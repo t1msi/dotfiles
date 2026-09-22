@@ -11,9 +11,13 @@ Commands:
   build [ARGS...]      Build with extra make arguments
   compdb [ARGS...]     Clean-build through Bear to generate compile_commands.json
   lint [REGEX...]      Run clang-tidy over the compilation database
+  test unit [NAME]     Run all stock unit tests or one test class
+  test ugcs TARGET     List or run UGCS tests; TARGET is list, all, or a class
   run [ARGS...]        Run the staged application
   debug [ARGS...]      Debug the staged application with GDB
   clean                Run the generated clean target
+  clear                Remove the shadow build directory
+  rebuild [ARGS...]    Clear, configure with extra qmake arguments, and build
 
 Environment:
   QMAKE_PROJECT_FILE       Project file; otherwise discovered above $PWD
@@ -24,6 +28,9 @@ Environment:
   QMAKE_COURSE_USER_MODE   COURSE_USER_MODE value, default: developer
   QMAKE_RUN_TARGET         Staged executable name, default: Course
   QMAKE_JOBS               Parallel job count, default: nproc
+
+Project configuration:
+  .qmake-workflow.args     One persistent qmake argument per line
 EOF
 }
 
@@ -103,6 +110,13 @@ qmake_arguments=(
     "PROJECT_ARG=${QMAKE_PROJECT_ARG:-duck}"
     "COURSE_USER_MODE=${QMAKE_COURSE_USER_MODE:-developer}"
 )
+arguments_file=$project_root/.qmake-workflow.args
+if [[ -f $arguments_file ]]; then
+    while IFS= read -r argument || [[ -n $argument ]]; do
+        [[ $argument =~ ^[[:space:]]*(#|$) ]] && continue
+        qmake_arguments+=("$argument")
+    done < "$arguments_file"
+fi
 
 configure_project() {
     [[ -x $qmake_bin ]] || die "qmake is not executable: $qmake_bin"
@@ -112,11 +126,92 @@ configure_project() {
         cd "$build_dir"
         "$qmake_bin" "$project_file" "${qmake_arguments[@]}" "$@"
     )
+    touch "$build_dir/.qmake-workflow-build"
 }
 
 ensure_configured() {
     if [[ ! -f $build_dir/Makefile ]]; then
         configure_project
+    fi
+}
+
+build_project() {
+    require_command make
+    ensure_configured
+    print_command make -C "$build_dir" "-j$jobs" "$@"
+    make -C "$build_dir" "-j$jobs" "$@"
+}
+
+require_debug_application() {
+    ensure_configured
+    [[ -x $run_binary ]] || die "application not built: $run_binary"
+    require_command grep
+    grep -Fq 'CONFIG+=debug' "$build_dir/Makefile" || die "tests require a debug build; run 'qmake-workflow rebuild'"
+}
+
+validate_test_name() {
+    [[ $1 =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]] || die "invalid test class: $1"
+}
+
+run_application_test() {
+    local test_kind=${1:-}
+    if (( $# > 0 )); then
+        shift
+    fi
+
+    case $test_kind in
+        unit)
+            (( $# <= 1 )) || die "usage: qmake-workflow test unit [TEST_CLASS]"
+            require_debug_application
+            require_command xvfb-run
+            local unit_arguments=(--unittest)
+            if (( $# == 1 )); then
+                validate_test_name "$1"
+                unit_arguments+=("$1")
+            fi
+            print_command xvfb-run -a "$run_binary" "${unit_arguments[@]}"
+            (
+                cd "$staging_dir"
+                xvfb-run -a "$run_binary" "${unit_arguments[@]}"
+            )
+            ;;
+        ugcs)
+            (( $# == 1 )) || die "usage: qmake-workflow test ugcs <list|all|TEST_CLASS>"
+            require_debug_application
+            local ugcs_arguments
+            case $1 in
+                list)
+                    ugcs_arguments=(--ugcs-test-list)
+                    ;;
+                all)
+                    printf 'qmake-workflow: warning: the full UGCS suite includes tests that may hang\n' >&2
+                    ugcs_arguments=(--ugcs-test)
+                    ;;
+                *)
+                    validate_test_name "$1"
+                    ugcs_arguments=(--ugcs-test "$1")
+                    ;;
+            esac
+            print_command env QT_QPA_PLATFORM=offscreen "$run_binary" "${ugcs_arguments[@]}"
+            (
+                cd "$staging_dir"
+                QT_QPA_PLATFORM=offscreen "$run_binary" "${ugcs_arguments[@]}"
+            )
+            ;;
+        *)
+            die "usage: qmake-workflow test <unit|ugcs> ..."
+            ;;
+    esac
+}
+
+clear_build_directory() {
+    [[ $build_dir != / && $build_dir != "$project_root" ]] || die "refusing to clear unsafe build directory: $build_dir"
+    if [[ $build_dir != "$project_root"/* && ! -f $build_dir/.qmake-workflow-build ]]; then
+        die "refusing to clear unmarked external build directory: $build_dir"
+    fi
+    if [[ -e $build_dir || -L $build_dir ]]; then
+        print_command rm -rf -- "$build_dir"
+        rm -rf -- "$build_dir"
     fi
 }
 
@@ -128,15 +223,15 @@ case $command_name in
         printf 'build_dir=%s\n' "$build_dir"
         printf 'compile_commands=%s\n' "$build_dir/compile_commands.json"
         printf 'run_binary=%s\n' "$run_binary"
+        printf 'configure_arguments='
+        printf ' %q' "${qmake_arguments[@]}"
+        printf '\n'
         ;;
     configure)
         configure_project "$@"
         ;;
     build)
-        require_command make
-        ensure_configured
-        print_command make -C "$build_dir" "-j$jobs" "$@"
-        make -C "$build_dir" "-j$jobs" "$@"
+        build_project "$@"
         ;;
     compdb)
         require_command bear
@@ -163,6 +258,9 @@ case $command_name in
         print_command "$lint_command" -p "$build_dir" "-j$jobs" "$@"
         "$lint_command" -p "$build_dir" "-j$jobs" "$@"
         ;;
+    test)
+        run_application_test "$@"
+        ;;
     run)
         [[ -x $run_binary ]] || die "application not built: $run_binary"
         print_command "$run_binary" "$@"
@@ -181,6 +279,14 @@ case $command_name in
         ensure_configured
         print_command make -C "$build_dir" clean
         make -C "$build_dir" clean
+        ;;
+    clear)
+        clear_build_directory
+        ;;
+    rebuild)
+        clear_build_directory
+        configure_project "$@"
+        build_project
         ;;
     *)
         usage >&2

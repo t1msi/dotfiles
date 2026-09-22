@@ -1,0 +1,28 @@
+---
+- name: "Create the controller asset cache for {{ ansible_architecture }}"
+  ansible.builtin.file:
+    path: "{{ workstation_asset_cache_directory }}/{{ ansible_architecture }}"
+    state: directory
+    mode: "0755"
+  delegate_to: localhost
+  become: false
+  check_mode: false
+
+- name: "Cache asset on the controller | {{ workstation_asset.name }}"
+  ansible.builtin.get_url:
+    url: "{{ workstation_asset.url }}"
+    dest: >-
+      {{ workstation_asset_cache_directory }}/{{ ansible_architecture }}/{{ workstation_asset.filename }}
+    checksum: "sha256:{{ workstation_asset.checksum }}"
+    mode: "{{ workstation_asset.mode }}"
+  delegate_to: localhost
+  become: false
+  check_mode: false
+
+- name: "Copy asset from the controller | {{ workstation_asset.name }}"
+  become: true
+  ansible.builtin.copy:
+    src: >-
+      {{ workstation_asset_cache_directory }}/{{ ansible_architecture }}/{{ workstation_asset.filename }}
+    dest: "{{ workstation_asset.dest }}"
+    mode: "{{ workstation_asset.mode }}"
