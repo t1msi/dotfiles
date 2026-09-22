@@ -118,6 +118,10 @@ it. Always use `--limit` when a shared production inventory contains hosts that
 must not become development machines. The key, inventory, SSH aliases, and
 passwords remain outside this repository.
 
+Chezmoi preserves existing `.bashrc` and `.zshrc` contents. It only refreshes a
+marked block at the end of each file so editor task shells can find commands in
+`~/.local/bin`; machine-specific settings outside that block remain untouched.
+
 Remote provisioning is conservative by default. If a host has working package
 repositories and may receive missing packages, opt in explicitly. APT still uses
 `state: present`; the role never performs a distribution upgrade:

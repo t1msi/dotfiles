@@ -1,9 +1,0 @@
-# Keep interactive Zsh aligned with the Bash development environment.
-export EDITOR=nvim
-export VISUAL=nvim
-export PATH="$HOME/.local/bin:$PATH"
-
-# Keep machine-specific environment and secrets outside this repository.
-if [[ -r "$HOME/.zshrc.local" ]]; then
-  source "$HOME/.zshrc.local"
-fi
