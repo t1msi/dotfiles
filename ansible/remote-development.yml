@@ -14,6 +14,12 @@
     - workstation
 
   post_tasks:
+    - name: Reset the remote chezmoi source directory
+      ansible.builtin.file:
+        path: "{{ remote_development_source }}"
+        state: absent
+      when: not ansible_check_mode
+
     - name: Create the remote chezmoi source directory
       ansible.builtin.file:
         path: "{{ remote_development_source }}"
