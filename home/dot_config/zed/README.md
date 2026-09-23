@@ -59,6 +59,10 @@ rebuild operations, plus CMake tests. `clean` preserves the configured tree;
 configure options belong in `.qmake-workflow.args` or `.cmake-workflow.args`,
 one argument per line.
 
+Each project task changes to `$ZED_WORKTREE_ROOT` inside the command after shell
+initialization. This keeps machine-specific startup commands such as `cd ~/app`
+from overriding the task's project directory.
+
 Qmake projects also expose stock unit tests, the UGCS test list, and the
 targeted `HealthCheckExecutorTest`. The underlying CLI supports other exact
 classes with `qmake-workflow test unit NAME` or `qmake-workflow test ugcs NAME`.
